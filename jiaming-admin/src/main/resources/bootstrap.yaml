@@ -1,0 +1,13 @@
+spring:
+  application:
+    name: jiaming-admin
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 101.43.107.164:8848
+        username: nacos
+        password: nacos
+      config:
+        server-addr: 101.43.107.164:8848
+        username: nacos
+        password: nacos
