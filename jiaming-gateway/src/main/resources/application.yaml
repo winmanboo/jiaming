@@ -1,2 +1,41 @@
 server:
   port: 8080
+
+spring:
+  cache:
+    type: caffeine
+  cloud:
+    gateway:
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allow-credentials: true
+            allowed-headers: "*"
+            # 缓存半个月的预检请求
+            max-age: 1296000
+            # 指示响应的资源是否可以被给定的来源共享。
+            # fixme 这里是测试情况下设置为所有源，上线后请改为对应前端服务器地址，例如 http://1.1.1.1:9527，可多个值
+            allowed-origin-patterns: "*"
+            allowed-methods:
+              - GET
+              - POST
+              - PUT
+              - OPTIONS
+              - DELETE
+      discovery:
+        locator:
+          # 开启服务注册与发现
+          enabled: true
+      routes:
+        - id: jiaming-admin
+          uri: lb://jiaming-admin
+          predicates:
+            - Path=/jiaming/admin/**
+          filters:
+            - RewritePath=/jiaming/?(?<segment>.*), /$\{segment}
+        - id: jiaming-uaa
+          uri: lb://jiaming-uaa
+          predicates:
+            - Path=/jiaming/uaa/**
+          filters:
+            - RewritePath=/jiaming/?(?<segment>.*), /$\{segment}

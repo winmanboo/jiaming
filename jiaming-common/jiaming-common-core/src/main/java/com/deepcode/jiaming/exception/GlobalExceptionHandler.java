@@ -1,7 +1,7 @@
 package com.deepcode.jiaming.exception;
 
 import com.deepcode.jiaming.result.Result;
-import com.deepcode.jiaming.result.ResultStatus;
+import com.deepcode.jiaming.result.UserResultStatus;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -44,6 +44,6 @@ public class GlobalExceptionHandler {
 
         log.error(ERROR_PATTERN, sb);
 
-        return Result.fail(ResultStatus.ARGUMENT_NOT_VALID);
+        return Result.fail(UserResultStatus.A0400);
     }
 }

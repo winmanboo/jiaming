@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.7.10</version>
+        <version>3.0.7</version>
     </parent>
 
     <groupId>com.deepcode.jiaming</groupId>
@@ -22,6 +22,7 @@
         <module>jiaming-common/jiaming-spring-boot-starter-mybatis-plus</module>
         <module>jiaming-common/jiaming-spring-boot-starter-redis</module>
         <module>jiaming-common/jiaming-spring-boot-starter-security</module>
+        <module>jiaming-uaa</module>
     </modules>
 
     <properties>
@@ -29,12 +30,13 @@
         <maven.compiler.target>11</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <spring.cloud.alibaba.version>2021.0.4.0</spring.cloud.alibaba.version>
-        <spring.cloud.version>2021.0.5</spring.cloud.version>
+        <spring.cloud.alibaba.version>2022.0.0.0-RC1</spring.cloud.alibaba.version>
+        <spring.cloud.version>2022.0.0</spring.cloud.version>
         <mybatis.plus.version>3.5.3.1</mybatis.plus.version>
         <orika.version>1.5.4</orika.version>
         <mysql.version>8.0.31</mysql.version>
         <knife4j.version>3.0.3</knife4j.version>
+        <hutool.version>5.8.17</hutool.version>
     </properties>
 
     <dependencyManagement>
@@ -101,6 +103,12 @@
                 <groupId>com.github.xiaoymin</groupId>
                 <artifactId>knife4j-spring-boot-starter</artifactId>
                 <version>${knife4j.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>cn.hutool</groupId>
+                <artifactId>hutool-all</artifactId>
+                <version>${hutool.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

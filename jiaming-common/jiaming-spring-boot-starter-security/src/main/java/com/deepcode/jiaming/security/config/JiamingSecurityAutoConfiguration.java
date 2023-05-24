@@ -3,14 +3,17 @@ package com.deepcode.jiaming.security.config;
 import com.deepcode.jiaming.security.annotation.IgnoreAuth;
 import com.deepcode.jiaming.security.exception.AccessDeniedHandlerImpl;
 import com.deepcode.jiaming.security.exception.AuthenticationEntryPointImpl;
+import com.deepcode.jiaming.security.exception.SecurityException;
 import com.deepcode.jiaming.security.filter.TokenAuthenticationFilter;
 import com.deepcode.jiaming.security.properties.SecurityProperties;
+import com.deepcode.jiaming.security.service.SecurityService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeansException;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
@@ -22,7 +25,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -46,11 +48,21 @@ import java.util.Set;
 @RequiredArgsConstructor
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 public class JiamingSecurityAutoConfiguration implements ApplicationContextAware {
-    private final UserDetailsService userDetailsService;
 
     private final SecurityProperties securityProperties;
 
     private ApplicationContext applicationContext;
+
+    @Bean
+    public TokenAuthenticationFilter tokenAuthenticationFilter() {
+        return new TokenAuthenticationFilter(securityProperties, securityService());
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public SecurityService securityService() {
+        throw new SecurityException("dit not implement SecurityService on container");
+    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -58,14 +70,9 @@ public class JiamingSecurityAutoConfiguration implements ApplicationContextAware
     }
 
     @Bean
-    public TokenAuthenticationFilter tokenAuthenticationFilter() {
-        return new TokenAuthenticationFilter(securityProperties);
-    }
-
-    @Bean
-    public AuthenticationManager authenticationManager(HttpSecurity httpSecurity) throws Exception {
+    public AuthenticationManager authenticationManager(HttpSecurity httpSecurity, SecurityService securityService) throws Exception {
         return httpSecurity.getSharedObject(AuthenticationManagerBuilder.class)
-                .userDetailsService(userDetailsService)
+                .userDetailsService(securityService)
                 .passwordEncoder(passwordEncoder())
                 .and()
                 .build();
