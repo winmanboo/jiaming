@@ -1,6 +1,7 @@
 package com.deepcode.jiaming.uaa.config;
 
 import cn.hutool.crypto.asymmetric.RSA;
+import com.deepcode.jiaming.constants.AuthConstant;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
@@ -8,32 +9,40 @@ import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.core.AuthorizationGrantType;
+import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.server.authorization.JdbcOAuth2AuthorizationConsentService;
 import org.springframework.security.oauth2.server.authorization.JdbcOAuth2AuthorizationService;
 import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationConsentService;
 import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationService;
 import org.springframework.security.oauth2.server.authorization.client.JdbcRegisteredClientRepository;
+import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configuration.OAuth2AuthorizationServerConfiguration;
+import org.springframework.security.oauth2.server.authorization.config.annotation.web.configurers.OAuth2AuthorizationServerConfigurer;
 import org.springframework.security.oauth2.server.authorization.settings.AuthorizationServerSettings;
-import org.springframework.security.rsa.crypto.KeyStoreKeyFactory;
+import org.springframework.security.oauth2.server.authorization.settings.ClientSettings;
+import org.springframework.security.oauth2.server.authorization.token.JwtEncodingContext;
+import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenCustomizer;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 
-import java.security.KeyPair;
-import java.security.PublicKey;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * @author winmanboo
@@ -43,36 +52,50 @@ import java.util.UUID;
 @Configuration
 @RequiredArgsConstructor
 public class AuthorizationServerConfig {
-    private AuthorizationJwtAuthenticationConverter authorizationJwtAuthenticationConverter;
 
-    @Lazy
-    @Autowired
-    public void setAuthorizationJwtAuthenticationConverter(AuthorizationJwtAuthenticationConverter authorizationJwtAuthenticationConverter) {
-        this.authorizationJwtAuthenticationConverter = authorizationJwtAuthenticationConverter;
-    }
+    @Value("${spring.cloud.oauth2.rsa.private-key}")
+    private String jwkPrivateKey;
+
+    @Value("${spring.cloud.oauth2.rsa.public-key}")
+    private String jwkPublicKey;
 
     @Bean
     @Order(Ordered.HIGHEST_PRECEDENCE)
     public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity httpSecurity) throws Exception {
-        OAuth2AuthorizationServerConfiguration.applyDefaultSecurity(httpSecurity);
-        // 未认证或认证失败会跳转到 /login
-        //.authenticationEntryPoint(
-        //                         new LoginUrlAuthenticationEntryPoint("/login"))
-        return httpSecurity.exceptionHandling()
+        OAuth2AuthorizationServerConfigurer authorizationServerConfigurer =
+                new OAuth2AuthorizationServerConfigurer();
+        RequestMatcher endpointsMatcher = authorizationServerConfigurer
+                .getEndpointsMatcher();
+
+        httpSecurity.securityMatcher(endpointsMatcher)
+                .exceptionHandling()
+                .authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/login"))
                 .and()
-                .oauth2ResourceServer()
-                .jwt().jwtAuthenticationConverter(authorizationJwtAuthenticationConverter)
-                .and()
-                .and()
-                .formLogin().permitAll()
-                .and()
-                .build();
+                .authorizeHttpRequests(authorize ->
+                        authorize.anyRequest().authenticated()
+                )
+                .csrf(csrf -> csrf.ignoringRequestMatchers(endpointsMatcher))
+                .apply(authorizationServerConfigurer);
+
+        return httpSecurity.build();
     }
 
     // 管理注册的 client
     @Bean
-    public JdbcRegisteredClientRepository jdbcRegisteredClientRepository(JdbcTemplate jdbcTemplate) {
-        return new JdbcRegisteredClientRepository(jdbcTemplate);
+    public JdbcRegisteredClientRepository jdbcRegisteredClientRepository(JdbcTemplate jdbcTemplate, PasswordEncoder passwordEncoder) {
+        RegisteredClient registeredClient = RegisteredClient.withId(UUID.randomUUID().toString())
+                .clientId("wzm")
+                .scope("message.read")
+                .redirectUri("https://www.baidu.com")
+                .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
+                .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
+                .clientSecret(passwordEncoder.encode("123"))
+                .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
+                .clientSettings(ClientSettings.builder().requireAuthorizationConsent(true).build())
+                .build();
+        JdbcRegisteredClientRepository jdbcRegisteredClientRepository = new JdbcRegisteredClientRepository(jdbcTemplate);
+        jdbcRegisteredClientRepository.save(registeredClient);
+        return jdbcRegisteredClientRepository;
     }
 
     @Bean
@@ -88,11 +111,11 @@ public class AuthorizationServerConfig {
     }
 
     @Bean
-    public JWKSource<SecurityContext> jwkSource(KeyPair keyPair) {
-        RSAPublicKey publicKey = (RSAPublicKey) keyPair.getPublic();
-        RSAPrivateKey privateKey = (RSAPrivateKey) keyPair.getPrivate();
-        RSAKey rsaKey = new RSAKey.Builder(publicKey)
-                .privateKey(privateKey)
+    public JWKSource<SecurityContext> jwkSource() {
+        RSA rsa = new RSA(jwkPrivateKey, jwkPublicKey);
+        RSAKey rsaKey = new RSAKey.Builder(((RSAPublicKey) rsa.getPublicKey()))
+                .privateKey(((RSAPrivateKey) rsa.getPrivateKey()))
+                // FIXME: 2023/5/25 keyId 不要每次都用 UUID 生成
                 .keyID(UUID.randomUUID().toString())
                 .build();
         JWKSet jwkSet = new JWKSet(rsaKey);
@@ -104,23 +127,29 @@ public class AuthorizationServerConfig {
         return OAuth2AuthorizationServerConfiguration.jwtDecoder(jwkSource);
     }
 
-    // 配置 oauth2 的端点路径
+    /**
+     * 配置 oauth2 的端点路径
+     */
     @Bean
     public AuthorizationServerSettings authorizationServerSettings() {
-        return AuthorizationServerSettings.builder().build();
+        return AuthorizationServerSettings.builder()
+                .build();
     }
 
+    /**
+     * 负责 JWT 自定义处理
+     */
     @Bean
-    public KeyPair keyPair() {
-        KeyStoreKeyFactory keyStoreKeyFactory = new KeyStoreKeyFactory(new ClassPathResource("uaaJwt.jks"), "jiaming".toCharArray());
-        return keyStoreKeyFactory.getKeyPair("jwt", "jiaming".toCharArray());
-    }
+    public OAuth2TokenCustomizer<JwtEncodingContext> tokenCustomizer() {
+        return context -> {
+            // 用户的权限（角色）
+            Set<String> authorities = context.getPrincipal().getAuthorities()
+                    .stream()
+                    .map(GrantedAuthority::getAuthority)
+                    .collect(Collectors.toSet());
 
-    public static void main(String[] args) {
-        KeyStoreKeyFactory keyStoreKeyFactory = new KeyStoreKeyFactory(new ClassPathResource("uaaJwt.jks"), "jiaming".toCharArray());
-        PublicKey publicKey = keyStoreKeyFactory.getKeyPair("jwt", "jiaming".toCharArray()).getPublic();
-        System.out.println("PublicKey: " + publicKey);
-        PublicKey castPublicKey = new RSA(null, publicKey).getPublicKey();
-        System.out.println("CastPublicKey: " + castPublicKey);
+            // 添加权限信息
+            context.getClaims().claim(AuthConstant.AUTHORITY_CLAIM_NAME, authorities);
+        };
     }
 }

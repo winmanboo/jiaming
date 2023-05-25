@@ -8,3 +8,6 @@ spring:
     password: mingge123
     driver-class-name: com.mysql.cj.jdbc.Driver
 
+logging:
+  level:
+    com.deepcode.jiaming: debug

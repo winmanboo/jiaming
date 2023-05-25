@@ -39,3 +39,7 @@ spring:
             - Path=/jiaming/uaa/**
           filters:
             - RewritePath=/jiaming/?(?<segment>.*), /$\{segment}
+
+logging:
+  level:
+    com.deepcode.jiaming: debug

@@ -3,3 +3,7 @@ server:
 spring:
   profiles:
     active: dev
+
+logging:
+  level:
+    com.deepcode.jiaming: debug

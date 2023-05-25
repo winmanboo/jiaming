@@ -36,9 +36,17 @@ public class AuthorizationManager implements ReactiveAuthorizationManager<Author
             return Mono.just(new AuthorizationDecision(true));
         }
 
-        return authentication.map(requestAuthentication ->
+        return authentication
+                .map(requestAuthentication ->
                         new AuthorizationDecision(requestAuthentication.isAuthenticated()))
                 .defaultIfEmpty(new AuthorizationDecision(false));
+
+        /*return authentication.filter(Authentication::isAuthenticated)
+                .flatMapIterable(Authentication::getAuthorities)
+                .map(GrantedAuthority::getAuthority)
+                .any(s -> s.contains("ROLE_"))
+                .map(AuthorizationDecision::new)
+                .defaultIfEmpty(new AuthorizationDecision(false));*/
     }
 
     private boolean whiteList(ServerWebExchange exchange) {
