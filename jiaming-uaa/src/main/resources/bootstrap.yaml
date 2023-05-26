@@ -13,5 +13,7 @@ spring:
         username: nacos
         password: nacos
         namespace: 5ac2b3ec-8522-431f-b9b0-411e1d53c7f6
-        shared-configs: oauth2.yaml
+        shared-configs:
+          - data-id: oauth2.yaml
+            refresh: true
         file-extension: yaml

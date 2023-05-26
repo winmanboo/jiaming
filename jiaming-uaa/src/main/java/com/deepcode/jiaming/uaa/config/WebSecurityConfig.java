@@ -52,6 +52,7 @@ public class WebSecurityConfig implements WebMvcConfigurer {
                 .cors()
                 .and()
                 .authorizeHttpRequests()
+                .requestMatchers("/uaa/jwk/publicKey").permitAll()
                 .anyRequest()
                 .authenticated()
                 .and()
@@ -66,6 +67,7 @@ public class WebSecurityConfig implements WebMvcConfigurer {
 
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
+        // FIXME: 2023/5/26 配置 /favicon.ico 请求时依然会走 filter
         return web -> web.ignoring().requestMatchers(
                 "/admin/modeler/**",
                 "/diagram-viewer/**",

@@ -4,6 +4,11 @@ server:
 spring:
   cache:
     type: caffeine
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: http://localhost:8000/jiaming/uaa/jwk/publicKey # 本地网关的地址，线上应该为 nginx 的入口地址
   cloud:
     gateway:
       globalcors:
@@ -39,6 +44,11 @@ spring:
             - Path=/jiaming/uaa/**
           filters:
             - RewritePath=/jiaming/?(?<segment>.*), /$\{segment}
+
+gateway:
+  white-list:
+    ignore-urls:
+#      - /jiaming/uaa/jwk/publicKey
 
 logging:
   level:

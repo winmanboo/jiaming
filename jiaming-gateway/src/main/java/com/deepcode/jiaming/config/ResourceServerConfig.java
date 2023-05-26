@@ -1,12 +1,10 @@
 package com.deepcode.jiaming.config;
 
-import cn.hutool.crypto.asymmetric.RSA;
 import com.deepcode.jiaming.auth.AuthorizationManager;
 import com.deepcode.jiaming.constants.AuthConstant;
 import com.deepcode.jiaming.point.ServerAuthenticationEntryPointImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
@@ -22,8 +20,6 @@ import org.springframework.security.oauth2.server.resource.web.server.authentica
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import reactor.core.publisher.Mono;
 
-import java.security.interfaces.RSAPublicKey;
-
 /**
  * @author winmanboo
  * @date 2023/5/23 16:28
@@ -38,8 +34,8 @@ public class ResourceServerConfig {
 
     private final ServerAuthenticationEntryPointImpl serverAuthenticationEntryPoint;
 
-    @Value("${spring.cloud.oauth2.rsa.public-key}")
-    private String jwkPublicKey;
+    /*@Value("${spring.cloud.oauth2.rsa.public-key}")
+    private String jwkPublicKey;*/
 
     @Bean
     public SecurityWebFilterChain httpSecurityFilterChain(ServerHttpSecurity httpSecurity,
@@ -47,12 +43,15 @@ public class ResourceServerConfig {
         httpSecurity
                 .csrf().disable()
                 .formLogin().disable()
-                .authorizeExchange().anyExchange().access(authorizationManager)
+                .authorizeExchange()
+                .pathMatchers("/jiaming/uaa/jwk/publicKey").permitAll()
+                .anyExchange()
+                .access(authorizationManager)
                 .and()
                 .oauth2ResourceServer(customizer -> {
                     customizer.jwt()
-                            .jwtAuthenticationConverter(converter)
-                            .publicKey(((RSAPublicKey) new RSA(null, jwkPublicKey).getPublicKey()));
+                            .jwtAuthenticationConverter(converter);
+                            // .publicKey(((RSAPublicKey) new RSA(null, jwkPublicKey).getPublicKey()));
                     customizer.authenticationEntryPoint(serverAuthenticationEntryPoint);
                 });
 
@@ -65,7 +64,11 @@ public class ResourceServerConfig {
         return httpSecurity.build();
     }
 
-    // 用于将 jwt 转换为 AuthenticationToken
+    /**
+     * 用于将 jwt 转换为 AuthenticationToken
+     *
+     * @return Converter
+     */
     @Bean
     public Converter<Jwt, Mono<AbstractAuthenticationToken>> jwtAuthenticationConverter() {
         JwtGrantedAuthoritiesConverter jwtGrantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();

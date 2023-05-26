@@ -1,7 +1,7 @@
 package com.deepcode.jiaming.uaa.config;
 
-import cn.hutool.crypto.asymmetric.RSA;
 import com.deepcode.jiaming.constants.AuthConstant;
+import com.deepcode.jiaming.uaa.properties.OAuth2JwkProperties;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
@@ -9,7 +9,7 @@ import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
@@ -38,8 +38,6 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 
-import java.security.interfaces.RSAPrivateKey;
-import java.security.interfaces.RSAPublicKey;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -51,13 +49,15 @@ import java.util.stream.Collectors;
 @Slf4j
 @Configuration
 @RequiredArgsConstructor
+@EnableConfigurationProperties(value = OAuth2JwkProperties.class)
 public class AuthorizationServerConfig {
+    private final OAuth2JwkProperties oAuth2JwkProperties;
 
-    @Value("${spring.cloud.oauth2.rsa.private-key}")
+    /*@Value("${spring.cloud.oauth2.rsa.private-key}")
     private String jwkPrivateKey;
 
     @Value("${spring.cloud.oauth2.rsa.public-key}")
-    private String jwkPublicKey;
+    private String jwkPublicKey;*/
 
     @Bean
     @Order(Ordered.HIGHEST_PRECEDENCE)
@@ -112,9 +112,9 @@ public class AuthorizationServerConfig {
 
     @Bean
     public JWKSource<SecurityContext> jwkSource() {
-        RSA rsa = new RSA(jwkPrivateKey, jwkPublicKey);
-        RSAKey rsaKey = new RSAKey.Builder(((RSAPublicKey) rsa.getPublicKey()))
-                .privateKey(((RSAPrivateKey) rsa.getPrivateKey()))
+        OAuth2JwkProperties.Rsa rsa = oAuth2JwkProperties.getRsa();
+        RSAKey rsaKey = new RSAKey.Builder(rsa.getPublicKey())
+                .privateKey(rsa.getPrivateKey())
                 // FIXME: 2023/5/25 keyId 不要每次都用 UUID 生成
                 .keyID(UUID.randomUUID().toString())
                 .build();

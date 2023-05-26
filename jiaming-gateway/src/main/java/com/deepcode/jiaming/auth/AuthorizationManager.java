@@ -1,5 +1,8 @@
 package com.deepcode.jiaming.auth;
 
+import cn.hutool.core.text.AntPathMatcher;
+import com.deepcode.jiaming.properties.WhiteListProperties;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.server.reactive.ServerHttpRequest;
@@ -19,7 +22,10 @@ import java.net.URI;
  */
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class AuthorizationManager implements ReactiveAuthorizationManager<AuthorizationContext> {
+    private final WhiteListProperties whiteListProperties;
+
     @Override
     public Mono<AuthorizationDecision> check(Mono<Authentication> authentication, AuthorizationContext authorizationContext) {
         ServerWebExchange exchange = authorizationContext.getExchange();
@@ -50,6 +56,23 @@ public class AuthorizationManager implements ReactiveAuthorizationManager<Author
     }
 
     private boolean whiteList(ServerWebExchange exchange) {
+        ServerHttpRequest request = exchange.getRequest();
+        HttpMethod method = request.getMethod();
+        String path = request.getURI().getPath();
+
+        if (method.matches(HttpMethod.OPTIONS.name())) {
+            log.debug("放行：{}：{}", method, path);
+            return true;
+        }
+
+        AntPathMatcher antPathMatcher = new AntPathMatcher();
+
+        for (String ignoreUrl : whiteListProperties.getIgnoreUrls()) {
+            if (antPathMatcher.match(ignoreUrl, path)) {
+                return true;
+            }
+        }
+
         return false;
     }
 }
