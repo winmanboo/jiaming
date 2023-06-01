@@ -34,9 +34,6 @@ public class ResourceServerConfig {
 
     private final ServerAuthenticationEntryPointImpl serverAuthenticationEntryPoint;
 
-    /*@Value("${spring.cloud.oauth2.rsa.public-key}")
-    private String jwkPublicKey;*/
-
     @Bean
     public SecurityWebFilterChain httpSecurityFilterChain(ServerHttpSecurity httpSecurity,
                                                           Converter<Jwt, Mono<AbstractAuthenticationToken>> converter) {

@@ -53,12 +53,6 @@ import java.util.stream.Collectors;
 public class AuthorizationServerConfig {
     private final OAuth2JwkProperties oAuth2JwkProperties;
 
-    /*@Value("${spring.cloud.oauth2.rsa.private-key}")
-    private String jwkPrivateKey;
-
-    @Value("${spring.cloud.oauth2.rsa.public-key}")
-    private String jwkPublicKey;*/
-
     @Bean
     @Order(Ordered.HIGHEST_PRECEDENCE)
     public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity httpSecurity) throws Exception {
@@ -89,6 +83,7 @@ public class AuthorizationServerConfig {
                 .redirectUri("https://www.baidu.com")
                 .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
                 .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
+                .authorizationGrantType(AuthorizationGrantType.JWT_BEARER) // 这种模式其实就是简化模式
                 .clientSecret(passwordEncoder.encode("123"))
                 .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
                 .clientSettings(ClientSettings.builder().requireAuthorizationConsent(true).build())
