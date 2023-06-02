@@ -1,7 +1,12 @@
 package com.deepcode.jiaming.uaa.config;
 
 import com.deepcode.jiaming.constants.AuthConstant;
+import com.deepcode.jiaming.uaa.deserializer.LongMixin;
+import com.deepcode.jiaming.uaa.deserializer.SecurityUserMixin;
+import com.deepcode.jiaming.uaa.entity.SecurityUser;
 import com.deepcode.jiaming.uaa.properties.OAuth2JwkProperties;
+import com.fasterxml.jackson.databind.Module;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
@@ -16,28 +21,29 @@ import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.core.AuthorizationGrantType;
-import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
+import org.springframework.security.jackson2.SecurityJackson2Modules;
+import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.server.authorization.JdbcOAuth2AuthorizationConsentService;
 import org.springframework.security.oauth2.server.authorization.JdbcOAuth2AuthorizationService;
 import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationConsentService;
 import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationService;
 import org.springframework.security.oauth2.server.authorization.client.JdbcRegisteredClientRepository;
-import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configuration.OAuth2AuthorizationServerConfiguration;
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configurers.OAuth2AuthorizationServerConfigurer;
+import org.springframework.security.oauth2.server.authorization.jackson2.OAuth2AuthorizationServerJackson2Module;
 import org.springframework.security.oauth2.server.authorization.settings.AuthorizationServerSettings;
-import org.springframework.security.oauth2.server.authorization.settings.ClientSettings;
 import org.springframework.security.oauth2.server.authorization.token.JwtEncodingContext;
 import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenCustomizer;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -77,26 +83,53 @@ public class AuthorizationServerConfig {
     // 管理注册的 client
     @Bean
     public JdbcRegisteredClientRepository jdbcRegisteredClientRepository(JdbcTemplate jdbcTemplate, PasswordEncoder passwordEncoder) {
-        RegisteredClient registeredClient = RegisteredClient.withId(UUID.randomUUID().toString())
+        /*RegisteredClient registeredClient = RegisteredClient.withId(UUID.randomUUID().toString())
                 .clientId("wzm")
                 .scope("message.read")
                 .redirectUri("https://www.baidu.com")
-                .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
-                .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
+                .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE) // 授权码模式
+                .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN) // 刷新 token 模式
+                .authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS) // 客户端模式
                 .authorizationGrantType(AuthorizationGrantType.JWT_BEARER) // 这种模式其实就是简化模式
+                .authorizationGrantType(AuthorizationGrantType.PASSWORD) // 密码模式
                 .clientSecret(passwordEncoder.encode("123"))
                 .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
                 .clientSettings(ClientSettings.builder().requireAuthorizationConsent(true).build())
                 .build();
         JdbcRegisteredClientRepository jdbcRegisteredClientRepository = new JdbcRegisteredClientRepository(jdbcTemplate);
         jdbcRegisteredClientRepository.save(registeredClient);
-        return jdbcRegisteredClientRepository;
+        return jdbcRegisteredClientRepository;*/
+        return new JdbcRegisteredClientRepository(jdbcTemplate);
     }
 
     @Bean
     public OAuth2AuthorizationService authorizationService(JdbcTemplate jdbcTemplate,
                                                            RegisteredClientRepository registeredClientRepository) {
-        return new JdbcOAuth2AuthorizationService(jdbcTemplate, registeredClientRepository);
+        JdbcOAuth2AuthorizationService authorizationService = new JdbcOAuth2AuthorizationService(jdbcTemplate, registeredClientRepository);
+        JdbcOAuth2AuthorizationService.OAuth2AuthorizationRowMapper rowMapper =
+                new JdbcOAuth2AuthorizationService.OAuth2AuthorizationRowMapper(registeredClientRepository);
+        JdbcOAuth2AuthorizationService.OAuth2AuthorizationParametersMapper parametersMapper =
+                new JdbcOAuth2AuthorizationService.OAuth2AuthorizationParametersMapper();
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        ClassLoader classLoader = JdbcOAuth2AuthorizationService.class.getClassLoader();
+        List<Module> securityModules = SecurityJackson2Modules.getModules(classLoader);
+        // objectMapper.registerModule(new CoreJackson2Module());
+        objectMapper.registerModules(securityModules);
+        objectMapper.registerModule(new OAuth2AuthorizationServerJackson2Module());
+        // 用于解决 JackSon 反序列化问题
+        // If you believe this class is safe to deserialize, please provide an explicit mapping using Jackson annotations or by providing a Mixin.
+        // If the serialization is only done by a trusted source, you can also enable default typing.
+        // https://stackoverflow.com/questions/70919216/jwtauthenticationtoken-is-not-in-the-allowlist-jackson-issue
+        objectMapper.addMixIn(SecurityUser.class, SecurityUserMixin.class);
+        objectMapper.addMixIn(Long.class, LongMixin.class);
+
+        rowMapper.setObjectMapper(objectMapper);
+        parametersMapper.setObjectMapper(objectMapper);
+
+        authorizationService.setAuthorizationRowMapper(rowMapper);
+        authorizationService.setAuthorizationParametersMapper(parametersMapper);
+        return authorizationService;
     }
 
     @Bean
@@ -137,14 +170,28 @@ public class AuthorizationServerConfig {
     @Bean
     public OAuth2TokenCustomizer<JwtEncodingContext> tokenCustomizer() {
         return context -> {
+            Authentication authentication = context.getPrincipal();
             // 用户的权限（角色）
-            Set<String> authorities = context.getPrincipal().getAuthorities()
+            Set<String> authorities = authentication.getAuthorities()
                     .stream()
                     .map(GrantedAuthority::getAuthority)
                     .collect(Collectors.toSet());
 
-            // 添加权限信息
-            context.getClaims().claim(AuthConstant.AUTHORITY_CLAIM_NAME, authorities);
+            Object principal = authentication.getPrincipal();
+
+            JwtClaimsSet.Builder claimsBuilder = context.getClaims().claim(AuthConstant.AUTHORITY_CLAIM_NAME, authorities);
+
+            if (principal instanceof String) {
+                // 客户端模式 principal 为 clientId
+                String clientId = (String) principal;
+            } else if (principal instanceof SecurityUser) {
+                // 授权码模式 principal 为 SecurityUser
+                SecurityUser securityUser = (SecurityUser) principal;
+                // 添加权限信息
+                claimsBuilder.claim(AuthConstant.IS_ADMIN_CLAIM_NAME, securityUser.getIsAdmin())
+                        .claim(AuthConstant.TENANT_CLAIM_NAME, securityUser.getTenantId())
+                        .claim(AuthConstant.USER_ID_CLAIM_NAME, securityUser.getUserId());
+            }
         };
     }
 }

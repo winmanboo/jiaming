@@ -1,4 +1,4 @@
-package com.deepcode.jiaming.admin.entity;
+package com.deepcode.jiaming.uaa.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;

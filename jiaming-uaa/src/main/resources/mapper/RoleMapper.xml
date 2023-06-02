@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.deepcode.jiaming.uaa.mapper.RoleMapper">
+
+    <select id="loadRolesByUserIdAndTenantId" resultType="com.deepcode.jiaming.uaa.entity.Role">
+        select sr.*
+        from sys_role sr
+                 inner join sys_user_role sur on sr.id = sur.role_id and sur.user_id = #{userId}
+        where sr.tenant_id = #{tenantId}
+    </select>
+</mapper>

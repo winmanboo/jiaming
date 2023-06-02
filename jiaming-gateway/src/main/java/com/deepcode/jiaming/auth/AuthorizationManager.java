@@ -37,8 +37,8 @@ public class AuthorizationManager implements ReactiveAuthorizationManager<Author
 
         log.debug("访问：{}：{}", method, uri);
 
-        boolean whiteList = whiteList(exchange);
-        if (whiteList) {
+        boolean whited = whiteList(exchange);
+        if (whited) {
             return Mono.just(new AuthorizationDecision(true));
         }
 
