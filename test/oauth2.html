@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <script src="http://libs.baidu.com/jquery/2.1.4/jquery.min.js"></script>
+</head>
+
+<body>
+  <h1>Test OAuth2</h1>
+
+  <script>
+    // Content-Type 'application/x-www-form-urlencoded;charset=UTF-8' is not supported
+    window.onload = function () {
+      console.log('onload');
+      var code = getQueryVariable("code")
+      console.log(code);
+
+      $.ajax({
+        url: 'http://localhost:8080/jiaming/uaa/oauth2/access_token',
+        type: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        data: JSON.stringify({
+          code: code
+        }),
+        success: function (res) {
+          console.log(`响应成功：${JSON.stringify(res)}`)
+        },
+        error: function (error) {
+          console.log(`响应失败：${error}`)
+        }
+      })
+    }
+
+    function getQueryVariable(variable) {
+      var query = window.location.search.substring(1);
+      var vars = query.split("&");
+      for (var i = 0; i < vars.length; i++) {
+        var pair = vars[i].split("=");
+        if (pair[0] == variable) { return pair[1]; }
+      }
+      return (false);
+    }
+  </script>
+</body>
+
+</html>

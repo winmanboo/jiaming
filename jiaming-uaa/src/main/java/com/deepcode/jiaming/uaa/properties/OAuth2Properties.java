@@ -12,12 +12,20 @@ import java.security.interfaces.RSAPublicKey;
  * @date 2023/5/26 16:25
  */
 @Data
-@ConfigurationProperties(prefix = "oauth2.jwk")
-public class OAuth2JwkProperties {
-    private Rsa rsa;
+@ConfigurationProperties(prefix = "oauth2")
+public class OAuth2Properties {
+    /**
+     * json web key（jwt 的加密 key）
+     */
+    private Jwk jwk;
+
+    /**
+     * 默认的 oauth2 授权码模式重定向的前端地址
+     */
+    private String redirectUri;
 
     @Data
-    public static class Rsa {
+    public static class Jwk {
         private String privateKey;
 
         private String publicKey;

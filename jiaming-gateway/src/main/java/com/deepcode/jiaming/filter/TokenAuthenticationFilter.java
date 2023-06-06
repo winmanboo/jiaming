@@ -30,7 +30,8 @@ public class TokenAuthenticationFilter implements GlobalFilter, Ordered {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        return null;
+        log.info("Global Filter Invoke");
+        return chain.filter(exchange);
     }
 
     @Override

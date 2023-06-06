@@ -17,6 +17,8 @@ import reactor.core.publisher.Mono;
 import java.net.URI;
 
 /**
+ * 处理白名单的授权管理器
+ *
  * @author winmanboo
  * @date 2023/5/23 20:07
  */

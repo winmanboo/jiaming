@@ -1,16 +1,20 @@
 package com.deepcode.jiaming.config;
 
 import com.deepcode.jiaming.auth.AuthorizationManager;
+import com.deepcode.jiaming.auth.JmtkFilter;
 import com.deepcode.jiaming.constants.AuthConstant;
+import com.deepcode.jiaming.constants.Constants;
 import com.deepcode.jiaming.point.ServerAuthenticationEntryPointImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
+import org.springframework.security.config.web.server.SecurityWebFiltersOrder;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
@@ -36,15 +40,17 @@ public class ResourceServerConfig {
 
     @Bean
     public SecurityWebFilterChain httpSecurityFilterChain(ServerHttpSecurity httpSecurity,
+                                                          RedisTemplate<String, Object> redisTemplate,
                                                           Converter<Jwt, Mono<AbstractAuthenticationToken>> converter) {
         httpSecurity
                 .csrf().disable()
                 .formLogin().disable()
                 .authorizeExchange()
-                .pathMatchers("/jiaming/uaa/jwk/publicKey").permitAll()
+                .pathMatchers(Constants.OAUTH2_JWK_ENDPOINT).permitAll()
                 .anyExchange()
                 .access(authorizationManager)
                 .and()
+                .addFilterAt(new JmtkFilter(redisTemplate), SecurityWebFiltersOrder.AUTHENTICATION)
                 .oauth2ResourceServer(customizer -> {
                     customizer.jwt()
                             .jwtAuthenticationConverter(converter);

@@ -9,6 +9,11 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class AuthConstant {
     /**
+     * 前端携带的 token 请求头
+     */
+    public static final String AUTH_TOKEN_HEADER = "jm-tk";
+
+    /**
      * 用于 jwt 中存权限信息的字段
      */
     public static final String AUTHORITY_CLAIM_NAME = "authorities";

@@ -52,7 +52,7 @@ public class WebSecurityConfig implements WebMvcConfigurer {
                 .cors()
                 .and()
                 .authorizeHttpRequests()
-                .requestMatchers("/uaa/jwk/publicKey").permitAll()
+                .requestMatchers("/uaa/jwk/**", "/uaa/client/**", "/uaa/oauth2/**").permitAll()
                 .anyRequest()
                 .authenticated()
                 .and()

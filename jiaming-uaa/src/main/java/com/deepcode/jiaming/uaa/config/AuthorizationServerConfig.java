@@ -1,10 +1,13 @@
 package com.deepcode.jiaming.uaa.config;
 
+import cn.hutool.core.text.CharSequenceUtil;
 import com.deepcode.jiaming.constants.AuthConstant;
+import com.deepcode.jiaming.exception.JiamingException;
+import com.deepcode.jiaming.uaa.constants.Oauth2Constant;
 import com.deepcode.jiaming.uaa.deserializer.LongMixin;
 import com.deepcode.jiaming.uaa.deserializer.SecurityUserMixin;
 import com.deepcode.jiaming.uaa.entity.SecurityUser;
-import com.deepcode.jiaming.uaa.properties.OAuth2JwkProperties;
+import com.deepcode.jiaming.uaa.properties.OAuth2Properties;
 import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jose.jwk.JWKSet;
@@ -25,6 +28,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.jackson2.SecurityJackson2Modules;
+import org.springframework.security.oauth2.core.AuthorizationGrantType;
+import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.server.authorization.JdbcOAuth2AuthorizationConsentService;
@@ -32,11 +37,13 @@ import org.springframework.security.oauth2.server.authorization.JdbcOAuth2Author
 import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationConsentService;
 import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationService;
 import org.springframework.security.oauth2.server.authorization.client.JdbcRegisteredClientRepository;
+import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configuration.OAuth2AuthorizationServerConfiguration;
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configurers.OAuth2AuthorizationServerConfigurer;
 import org.springframework.security.oauth2.server.authorization.jackson2.OAuth2AuthorizationServerJackson2Module;
 import org.springframework.security.oauth2.server.authorization.settings.AuthorizationServerSettings;
+import org.springframework.security.oauth2.server.authorization.settings.ClientSettings;
 import org.springframework.security.oauth2.server.authorization.token.JwtEncodingContext;
 import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenCustomizer;
 import org.springframework.security.web.SecurityFilterChain;
@@ -45,7 +52,6 @@ import org.springframework.security.web.util.matcher.RequestMatcher;
 
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -55,9 +61,9 @@ import java.util.stream.Collectors;
 @Slf4j
 @Configuration
 @RequiredArgsConstructor
-@EnableConfigurationProperties(value = OAuth2JwkProperties.class)
+@EnableConfigurationProperties(value = OAuth2Properties.class)
 public class AuthorizationServerConfig {
-    private final OAuth2JwkProperties oAuth2JwkProperties;
+    private final OAuth2Properties oAuth2Properties;
 
     @Bean
     @Order(Ordered.HIGHEST_PRECEDENCE)
@@ -66,6 +72,12 @@ public class AuthorizationServerConfig {
                 new OAuth2AuthorizationServerConfigurer();
         RequestMatcher endpointsMatcher = authorizationServerConfigurer
                 .getEndpointsMatcher();
+
+        /*authorizationServerConfigurer.oidc(oidc -> {
+            oidc.userInfoEndpoint(userInfoEndpoint -> {
+                userInfoEndpoint
+            })
+        })*/
 
         httpSecurity.securityMatcher(endpointsMatcher)
                 .exceptionHandling()
@@ -83,23 +95,13 @@ public class AuthorizationServerConfig {
     // 管理注册的 client
     @Bean
     public JdbcRegisteredClientRepository jdbcRegisteredClientRepository(JdbcTemplate jdbcTemplate, PasswordEncoder passwordEncoder) {
-        /*RegisteredClient registeredClient = RegisteredClient.withId(UUID.randomUUID().toString())
-                .clientId("wzm")
-                .scope("message.read")
-                .redirectUri("https://www.baidu.com")
-                .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE) // 授权码模式
-                .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN) // 刷新 token 模式
-                .authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS) // 客户端模式
-                .authorizationGrantType(AuthorizationGrantType.JWT_BEARER) // 这种模式其实就是简化模式
-                .authorizationGrantType(AuthorizationGrantType.PASSWORD) // 密码模式
-                .clientSecret(passwordEncoder.encode("123"))
-                .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
-                .clientSettings(ClientSettings.builder().requireAuthorizationConsent(true).build())
-                .build();
-        JdbcRegisteredClientRepository jdbcRegisteredClientRepository = new JdbcRegisteredClientRepository(jdbcTemplate);
-        jdbcRegisteredClientRepository.save(registeredClient);
-        return jdbcRegisteredClientRepository;*/
-        return new JdbcRegisteredClientRepository(jdbcTemplate);
+        JdbcRegisteredClientRepository repository = new JdbcRegisteredClientRepository(jdbcTemplate);
+        RegisteredClient defaultClient = repository.findByClientId(Oauth2Constant.DEFAULT_CLIENT_ID);
+        if (defaultClient == null) {
+            RegisteredClient client = createDefaultClient(passwordEncoder);
+            repository.save(client);
+        }
+        return repository;
     }
 
     @Bean
@@ -140,11 +142,11 @@ public class AuthorizationServerConfig {
 
     @Bean
     public JWKSource<SecurityContext> jwkSource() {
-        OAuth2JwkProperties.Rsa rsa = oAuth2JwkProperties.getRsa();
-        RSAKey rsaKey = new RSAKey.Builder(rsa.getPublicKey())
-                .privateKey(rsa.getPrivateKey())
+        OAuth2Properties.Jwk jwk = oAuth2Properties.getJwk();
+        RSAKey rsaKey = new RSAKey.Builder(jwk.getPublicKey())
+                .privateKey(jwk.getPrivateKey())
                 // FIXME: 2023/5/25 keyId 不要每次都用 UUID 生成
-                .keyID(UUID.randomUUID().toString())
+//                .keyID(UUID.randomUUID().toString())
                 .build();
         JWKSet jwkSet = new JWKSet(rsaKey);
         return new ImmutableJWKSet<>(jwkSet);
@@ -193,5 +195,33 @@ public class AuthorizationServerConfig {
                         .claim(AuthConstant.USER_ID_CLAIM_NAME, securityUser.getUserId());
             }
         };
+    }
+
+    /**
+     * 创建默认的客户端信息
+     *
+     * @param passwordEncoder 密码加密
+     * @return 默认的客户端
+     */
+    private RegisteredClient createDefaultClient(PasswordEncoder passwordEncoder) {
+        String redirectUri = oAuth2Properties.getRedirectUri();
+
+        if (CharSequenceUtil.isEmpty(redirectUri)) {
+            throw new JiamingException("redirect uri can not be null");
+        }
+
+        return RegisteredClient.withId(Oauth2Constant.DEFAULT_ID)
+                .clientId(Oauth2Constant.DEFAULT_CLIENT_ID)
+//                .scope(OidcScopes.OPENID) // 需要支持 oidc
+                .scope(Oauth2Constant.DEFAULT_SCOPE)
+                .redirectUri(redirectUri)
+                .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE) // 授权码模式
+                .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN) // 刷新 token 模式
+                .authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS) // 客户端模式
+                .authorizationGrantType(AuthorizationGrantType.JWT_BEARER) // 这种模式其实就是简化模式
+                .clientSecret(passwordEncoder.encode(Oauth2Constant.DEFAULT_CLIENT_SECRET))
+                .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
+                .clientSettings(ClientSettings.builder().requireAuthorizationConsent(true).build())
+                .build();
     }
 }
