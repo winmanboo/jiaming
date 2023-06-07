@@ -12,6 +12,7 @@ import com.deepcode.jiaming.uaa.constants.Oauth2Constant;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
@@ -22,10 +23,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.security.oauth2.server.authorization.client.JdbcRegisteredClientRepository;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
 import java.text.MessageFormat;
@@ -36,7 +35,8 @@ import java.util.Set;
  * @author winmanboo
  * @date 2023/6/4 19:50
  */
-@RestController
+@Slf4j
+@Controller
 @RequiredArgsConstructor
 @RequestMapping("/uaa/oauth2")
 public class OAuth2Controller {
@@ -59,6 +59,7 @@ public class OAuth2Controller {
      * @throws JsonProcessingException 解析响应异常抛出
      */
     @PostMapping("/access_token")
+    @ResponseBody
     public Result<Map<String, Object>> requestAccessToken(@RequestBody Map<String, Object> oAuth2TokenDto) throws JsonProcessingException {
         String code = (String) oAuth2TokenDto.get("code");
 
@@ -120,6 +121,12 @@ public class OAuth2Controller {
                     "error_uri", oAuth2Error.getError_uri()
             ));
         }
+    }
+
+    @GetMapping("/login")
+    public String loginPage() {
+        log.info("to login page");
+        return "login";
     }
 
     /**

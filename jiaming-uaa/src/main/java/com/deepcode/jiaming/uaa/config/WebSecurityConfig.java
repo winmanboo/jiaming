@@ -51,6 +51,12 @@ public class WebSecurityConfig implements WebMvcConfigurer {
                 .disable()
                 .cors()
                 .and()
+                .formLogin()
+                .loginPage("/uaa/oauth2/login")
+                // loginProcessingUrl 只是改变了登录认证的地址，并不代表认证交由你来处理，认证的流程还是 security 内部控制
+                .loginProcessingUrl("/uaa/oauth2/authenticate")
+                .permitAll()
+                .and()
                 .authorizeHttpRequests()
                 .requestMatchers("/uaa/jwk/**", "/uaa/client/**", "/uaa/oauth2/**").permitAll()
                 .anyRequest()
@@ -59,8 +65,6 @@ public class WebSecurityConfig implements WebMvcConfigurer {
                 .exceptionHandling()
                 // .authenticationEntryPoint(authenticationEntryPoint)
                 .accessDeniedHandler(accessDeniedHandler)
-                .and()
-                .formLogin()
                 .and()
                 .build();
     }

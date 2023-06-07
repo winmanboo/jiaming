@@ -9,7 +9,6 @@ import org.springframework.security.oauth2.core.OAuth2RefreshToken;
 import org.springframework.security.oauth2.server.authorization.OAuth2Authorization;
 import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationService;
 import org.springframework.security.oauth2.server.authorization.OAuth2TokenType;
-import org.springframework.stereotype.Component;
 
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
@@ -23,7 +22,7 @@ import java.util.concurrent.TimeUnit;
  * 而且不能对数据的过期时间进行动态配置，因为用户配置的 token 过期时间不同
  */
 @Slf4j
-@Component
+//@Component
 @RequiredArgsConstructor
 @Deprecated(since = "6/7", forRemoval = true)
 public class RedisOAuth2AuthorizationService implements OAuth2AuthorizationService {
