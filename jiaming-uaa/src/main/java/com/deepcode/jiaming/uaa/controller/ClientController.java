@@ -43,6 +43,10 @@ public class ClientController {
     @ResponseBody
     @PostMapping("/register")
     public Result<Void> registerClient(@RequestBody RegisteredClient registeredClient) {
+        // TODO: 2023/6/6 用自定义实体类接收，不要用 security 自带的
+        if (registeredClient == null) {
+            throw new JiamingException("客户端信息不能为空");
+        }
         registeredClientRepository.save(registeredClient);
         return Result.ok();
     }

@@ -2,8 +2,6 @@ package com.deepcode.jiaming.uaa.deserializer;
 
 import com.deepcode.jiaming.uaa.entity.SecurityUser;
 import com.deepcode.jiaming.uaa.utils.JsonNodeUtil;
-import com.fasterxml.jackson.core.JacksonException;
-import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
@@ -21,13 +19,13 @@ import java.util.Set;
  */
 public class SecurityUserDeserializer extends JsonDeserializer<SecurityUser> {
     @Override
-    public SecurityUser deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException, JacksonException {
+    public SecurityUser deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException {
         ObjectMapper mapper = (ObjectMapper) jsonParser.getCodec();
         JsonNode jsonNode = mapper.readTree(jsonParser);
-        return deserialize(jsonParser, mapper, jsonNode);
+        return deserialize(mapper, jsonNode);
     }
 
-    private SecurityUser deserialize(JsonParser parser, ObjectMapper mapper, JsonNode root) throws JsonParseException {
+    private SecurityUser deserialize(ObjectMapper mapper, JsonNode root) {
         if (Objects.nonNull(root)) {
             String username = root.get("username").textValue();
             String password = root.get("password").textValue();

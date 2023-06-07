@@ -1,9 +1,12 @@
 package com.deepcode.jiaming.constants;
 
+import lombok.experimental.UtilityClass;
+
 /**
  * @author winmanboo
  * @date 2023/6/6 16:23
  */
+@UtilityClass
 public class OAuth2Constant {
     /**
      * jmtk 存储的自定义 token 对应的 accessToken
