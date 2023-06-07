@@ -24,6 +24,14 @@ public class OAuth2Properties {
      */
     private String redirectUri;
 
+    /**
+     * redis 存储 oauth2 信息的相关配置
+     *
+     * @deprecated 使用 redis 存储 OAuth2 相关信息的能力可能在未来会删除
+     */
+    @Deprecated(since = "6/7", forRemoval = true)
+    private Redis redis;
+
     @Data
     public static class Jwk {
         private String privateKey;
@@ -37,5 +45,17 @@ public class OAuth2Properties {
         public RSAPublicKey getPublicKey() {
             return (RSAPublicKey) new RSA(null, publicKey).getPublicKey();
         }
+    }
+
+    /**
+     * @deprecated 使用 redis 存储 OAuth2 相关信息的能力可能在未来会删除
+     */
+    @Data
+    @Deprecated(since = "6/7", forRemoval = true)
+    public static class Redis {
+        /**
+         * Redis 存储授权信息的超时时间，单位为秒
+         */
+        private long authorizationTimeout = 300;
     }
 }

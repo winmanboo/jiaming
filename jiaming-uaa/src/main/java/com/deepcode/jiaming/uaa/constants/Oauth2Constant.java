@@ -1,9 +1,12 @@
 package com.deepcode.jiaming.uaa.constants;
 
+import lombok.experimental.UtilityClass;
+
 /**
  * @author winmanboo
  * @date 2023/6/6 15:35
  */
+@UtilityClass
 public class Oauth2Constant {
     /**
      * 初始的 clientId
