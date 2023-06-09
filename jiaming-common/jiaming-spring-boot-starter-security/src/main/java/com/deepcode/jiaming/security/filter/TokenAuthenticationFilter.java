@@ -1,55 +1,88 @@
 package com.deepcode.jiaming.security.filter;
 
+import cn.hutool.core.convert.NumberWithFormat;
 import cn.hutool.core.text.CharSequenceUtil;
+import cn.hutool.json.JSONArray;
+import cn.hutool.jwt.JWT;
+import cn.hutool.jwt.JWTPayload;
+import cn.hutool.jwt.JWTUtil;
+import com.deepcode.jiaming.constants.AuthConstant;
 import com.deepcode.jiaming.result.Result;
-import com.deepcode.jiaming.security.domain.SecurityUserInfo;
+import com.deepcode.jiaming.result.UserResultStatus;
+import com.deepcode.jiaming.security.context.UserInfoContext;
+import com.deepcode.jiaming.security.domain.UserInfo;
 import com.deepcode.jiaming.security.properties.SecurityProperties;
-import com.deepcode.jiaming.security.service.SecurityService;
-import com.deepcode.jiaming.security.utils.ResponseUtil;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.deepcode.jiaming.utils.ResponseUtil;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
+import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
+import javax.annotation.Nonnull;
 
 /**
+ * 解析 token 并存储用户信息到当前线程的过滤器
+ *
  * @author winmanboo
  * @date 2023/5/20 22:28
  */
+@Component
 @RequiredArgsConstructor
+@Order(Ordered.HIGHEST_PRECEDENCE)
 public class TokenAuthenticationFilter extends OncePerRequestFilter {
     private final SecurityProperties securityProperties;
 
-    private final SecurityService securityService;
-
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
-            throws ServletException, IOException {
+    protected void doFilterInternal(@Nonnull HttpServletRequest request, @Nonnull HttpServletResponse response,
+                                    @Nonnull FilterChain filterChain) {
         String token = getToken(request);
-        SecurityUserInfo userInfo = null;
         if (CharSequenceUtil.isNotEmpty(token)) {
             // 根据 token 拿到用户信息
             try {
-                userInfo = securityService.getUserInfoByToken(token);
-                if (null == userInfo) {
-
-                }
+                // FIXME: 2023/6/8 authorization 里面的 accessToken 已经被删除，但这里还是能解析
+                UserInfo userInfo = parseUserInfo(token);
+                UserInfoContext.set(userInfo);
+                filterChain.doFilter(request, response);
+                UserInfoContext.clear();
             } catch (Exception e) {
-                ResponseUtil.out(response, new ObjectMapper(), Result.fail("用户信息获取异常"));
+                ResponseUtil.out(response, Result.fail("用户信息获取异常"));
                 return;
             }
         }
 
-        if (null != userInfo) {
-
-        }
+        ResponseUtil.out(response, UserResultStatus.A0306);
     }
 
     private String getToken(HttpServletRequest request) {
-        return request.getHeader(securityProperties.getTokenHeader());
+        String token = request.getHeader(securityProperties.getTokenHeader());
+        return CharSequenceUtil.removePrefixIgnoreCase(token, "bearer ");
+    }
+
+    /**
+     * 解析 jwt 并封装成 UserInfo 返回
+     *
+     * @param token jwt
+     * @return 用户信息
+     */
+    @SuppressWarnings("unchecked")
+    private UserInfo parseUserInfo(String token) {
+        JWT jwt = JWTUtil.parseToken(token);
+        JWTPayload payload = jwt.getPayload();
+        long tenantId = ((NumberWithFormat) payload.getClaim(AuthConstant.TENANT_CLAIM_NAME)).longValue();
+        JSONArray authorities = (JSONArray) payload.getClaim(AuthConstant.AUTHORITY_CLAIM_NAME);
+        Boolean isAdmin = (Boolean) payload.getClaim(AuthConstant.IS_ADMIN_CLAIM_NAME);
+        long userId = ((NumberWithFormat) payload.getClaim(AuthConstant.USER_ID_CLAIM_NAME)).longValue();
+        String username = (String) payload.getClaim(AuthConstant.USER_NAME_CLAIM_NAME);
+        return UserInfo.builder()
+                .tenantId(tenantId)
+//                .authorities(authorities)
+                .isAdmin(isAdmin)
+                .userId(userId)
+                .username(username)
+                .build();
     }
 }

@@ -1,11 +1,11 @@
-package com.deepcode.jiaming.auth;
+package com.deepcode.jiaming.filter;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.text.AntPathMatcher;
 import com.deepcode.jiaming.constants.AuthConstant;
 import com.deepcode.jiaming.constants.Constants;
 import com.deepcode.jiaming.constants.OAuth2Constant;
-import com.deepcode.jiaming.entity.OAuth2AccessToken;
+import com.deepcode.jiaming.entity.OAuth2Token;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -50,16 +50,18 @@ public class JmtkFilter implements WebFilter {
         }
 
         String jmtk = tokenValues.get(0);
-        OAuth2AccessToken accessToken = (OAuth2AccessToken) redisTemplate.opsForValue()
-                .get(String.format(OAuth2Constant.JMTK_KEY_FORMAT, jmtk));
 
-        if (Objects.isNull(accessToken)) {
+        OAuth2Token oAuth2Token = (OAuth2Token)
+                redisTemplate.opsForValue()
+                        .get(String.format(OAuth2Constant.JMTK_KEY_FORMAT, jmtk));
+
+        if (Objects.isNull(oAuth2Token)) {
             return chain.filter(exchange);
         }
 
         ServerHttpRequest newRequest = request.mutate()
                 .header(OAuth2Constant.AUTHORIZATION_HEADER,
-                        accessToken.getToken_type() + " " + accessToken.getAccess_token())
+                        oAuth2Token.getTokenType() + " " + oAuth2Token.getAccessToken())
                 .build();
 
         return chain.filter(exchange.mutate().request(newRequest).build());

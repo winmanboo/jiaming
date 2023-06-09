@@ -34,7 +34,12 @@ public class AuthConstant {
     public static final String IS_ADMIN_CLAIM_NAME = "admin";
 
     /**
-     * 用户 jwt 中存用户id的字段
+     * 用于 jwt 中存用户id的字段
      */
     public static final String USER_ID_CLAIM_NAME = "uid";
+
+    /**
+     * 用于 jwt 中存用户名的字段
+     */
+    public static final String USER_NAME_CLAIM_NAME = "username";
 }

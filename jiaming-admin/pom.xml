@@ -30,6 +30,11 @@
 
         <dependency>
             <groupId>com.deepcode.jiaming</groupId>
+            <artifactId>jiaming-spring-boot-starter-security</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.deepcode.jiaming</groupId>
             <artifactId>jiaming-spring-boot-starter-redis</artifactId>
         </dependency>
 

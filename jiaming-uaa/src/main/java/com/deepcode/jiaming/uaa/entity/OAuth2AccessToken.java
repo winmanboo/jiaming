@@ -1,4 +1,4 @@
-package com.deepcode.jiaming.entity;
+package com.deepcode.jiaming.uaa.entity;
 
 import lombok.Data;
 

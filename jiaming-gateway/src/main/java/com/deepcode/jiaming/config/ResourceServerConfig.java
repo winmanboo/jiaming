@@ -1,7 +1,7 @@
 package com.deepcode.jiaming.config;
 
 import com.deepcode.jiaming.auth.AuthorizationManager;
-import com.deepcode.jiaming.auth.JmtkFilter;
+import com.deepcode.jiaming.filter.JmtkFilter;
 import com.deepcode.jiaming.constants.AuthConstant;
 import com.deepcode.jiaming.constants.Constants;
 import com.deepcode.jiaming.point.ServerAuthenticationEntryPointImpl;

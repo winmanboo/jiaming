@@ -1,52 +1,14 @@
 package com.deepcode.jiaming.security.config;
 
-import com.deepcode.jiaming.security.annotation.IgnoreAuth;
-import com.deepcode.jiaming.security.exception.AccessDeniedHandlerImpl;
-import com.deepcode.jiaming.security.exception.AuthenticationEntryPointImpl;
-import com.deepcode.jiaming.security.exception.SecurityException;
-import com.deepcode.jiaming.security.filter.TokenAuthenticationFilter;
-import com.deepcode.jiaming.security.properties.SecurityProperties;
-import com.deepcode.jiaming.security.service.SecurityService;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
-import lombok.RequiredArgsConstructor;
-import org.springframework.beans.BeansException;
-import org.springframework.boot.autoconfigure.AutoConfiguration;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-import org.springframework.context.annotation.Bean;
-import org.springframework.http.HttpMethod;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
-import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.method.HandlerMethod;
-import org.springframework.web.servlet.mvc.condition.PatternsRequestCondition;
-import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
-import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
-
-import javax.annotation.Nonnull;
-import java.util.Map;
-import java.util.Set;
-
-
 /**
  * @author winmanboo
  * @date 2023/5/20 22:20
  */
-@AutoConfiguration
+/*@AutoConfiguration
 @EnableWebSecurity
 @RequiredArgsConstructor
-@EnableGlobalMethodSecurity(prePostEnabled = true)
+@EnableConfigurationProperties(value = SecurityProperties.class)
+@EnableMethodSecurity(prePostEnabled = true)
 public class JiamingSecurityAutoConfiguration implements ApplicationContextAware {
 
     private final SecurityProperties securityProperties;
@@ -54,50 +16,39 @@ public class JiamingSecurityAutoConfiguration implements ApplicationContextAware
     private ApplicationContext applicationContext;
 
     @Bean
-    public TokenAuthenticationFilter tokenAuthenticationFilter() {
-        return new TokenAuthenticationFilter(securityProperties, securityService());
-    }
-
-    @Bean
-    @ConditionalOnMissingBean
-    public SecurityService securityService() {
-        throw new SecurityException("dit not implement SecurityService on container");
-    }
-
-    @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    @Bean
-    public AuthenticationManager authenticationManager(HttpSecurity httpSecurity, SecurityService securityService) throws Exception {
+    *//*@Bean
+    public AuthenticationManager authenticationManager(HttpSecurity httpSecurity) throws Exception {
         return httpSecurity.getSharedObject(AuthenticationManagerBuilder.class)
                 .userDetailsService(securityService)
                 .passwordEncoder(passwordEncoder())
                 .and()
                 .build();
-    }
+    }*//*
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity, ObjectMapper objectMapper,
-                                                   TokenAuthenticationFilter tokenAuthenticationFilter) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         Multimap<HttpMethod, String> ignoreAuthMap = getIgnoreAuthAnno();
         return httpSecurity.csrf().disable()
                 .cors()
                 .and()
-                .authorizeRequests()
-                .antMatchers(securityProperties.getWhiteList().toArray(new String[0])).permitAll()
-                .antMatchers(HttpMethod.GET, ignoreAuthMap.get(HttpMethod.GET).toArray(new String[0])).permitAll()
-                .antMatchers(HttpMethod.POST, ignoreAuthMap.get(HttpMethod.POST).toArray(new String[0])).permitAll()
-                .antMatchers(HttpMethod.DELETE, ignoreAuthMap.get(HttpMethod.DELETE).toArray(new String[0])).permitAll()
-                .antMatchers(HttpMethod.PUT, ignoreAuthMap.get(HttpMethod.PUT).toArray(new String[0])).permitAll()
+                .authorizeHttpRequests()
+                .requestMatchers(securityProperties.getWhiteList().toArray(new String[0])).permitAll()
+                .requestMatchers(HttpMethod.GET, ignoreAuthMap.get(HttpMethod.GET).toArray(new String[0])).permitAll()
+                .requestMatchers(HttpMethod.POST, ignoreAuthMap.get(HttpMethod.POST).toArray(new String[0])).permitAll()
+                .requestMatchers(HttpMethod.DELETE, ignoreAuthMap.get(HttpMethod.DELETE).toArray(new String[0])).permitAll()
+                .requestMatchers(HttpMethod.PUT, ignoreAuthMap.get(HttpMethod.PUT).toArray(new String[0])).permitAll()
                 .anyRequest().authenticated()
                 .and()
-                .addFilterBefore(tokenAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(new TokenAuthenticationFilter(securityProperties.getTokenHeader()),
+                        UsernamePasswordAuthenticationFilter.class)
                 // .addFilter(new SecurityLoginFilter(objectMapper, authenticationManager, mapperFacade, tokenHolder))
                 .exceptionHandling()
-                .authenticationEntryPoint(new AuthenticationEntryPointImpl(objectMapper))
-                .accessDeniedHandler(new AccessDeniedHandlerImpl(objectMapper))
+                .authenticationEntryPoint(new AuthenticationEntryPointImpl())
+                .accessDeniedHandler(new AccessDeniedHandlerImpl())
                 .and()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
@@ -106,7 +57,7 @@ public class JiamingSecurityAutoConfiguration implements ApplicationContextAware
 
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
-        return web -> web.ignoring().antMatchers(
+        return web -> web.ignoring().requestMatchers(
                 "/admin/modeler/**",
                 "/diagram-viewer/**",
                 "/editor-app/**",
@@ -159,4 +110,4 @@ public class JiamingSecurityAutoConfiguration implements ApplicationContextAware
     public void setApplicationContext(@Nonnull ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
     }
-}
+}*/

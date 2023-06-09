@@ -4,7 +4,6 @@ import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.validation.annotation.Validated;
 
-import javax.validation.constraints.NotEmpty;
 import java.util.Collections;
 import java.util.List;
 
@@ -19,7 +18,6 @@ public class SecurityProperties {
     /**
      * token 请求头
      */
-    @NotEmpty(message = "Token Header 不能为空")
     private String tokenHeader = "Authorization";
 
     /**

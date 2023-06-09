@@ -4,11 +4,14 @@ import cn.hutool.core.codec.Base64;
 import cn.hutool.core.lang.UUID;
 import cn.hutool.core.text.CharSequenceUtil;
 import com.deepcode.jiaming.constants.OAuth2Constant;
-import com.deepcode.jiaming.entity.OAuth2AccessToken;
+import com.deepcode.jiaming.entity.OAuth2Token;
+import com.deepcode.jiaming.uaa.entity.OAuth2AccessToken;
 import com.deepcode.jiaming.entity.OAuth2Error;
 import com.deepcode.jiaming.exception.JiamingException;
 import com.deepcode.jiaming.result.Result;
 import com.deepcode.jiaming.uaa.constants.Oauth2Constant;
+import com.deepcode.jiaming.uaa.properties.OAuth2Properties;
+import com.deepcode.jiaming.uaa.repository.JmtkJdbcOAuth2AuthorizationService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +33,7 @@ import org.springframework.web.client.RestTemplate;
 import java.text.MessageFormat;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author winmanboo
@@ -50,6 +54,10 @@ public class OAuth2Controller {
     private final ObjectMapper objectMapper;
 
     private final RedisTemplate<String, Object> redisTemplate;
+
+    private final OAuth2Properties oAuth2Properties;
+
+    private final JmtkJdbcOAuth2AuthorizationService oAuth2AuthorizationService;
 
     /**
      * 根据授权码请求获取访问令牌
@@ -99,14 +107,19 @@ public class OAuth2Controller {
             OAuth2AccessToken oAuth2AccessToken = objectMapper.readValue(result, OAuth2AccessToken.class);
 
             // 生成自定义 token 返回给用户
-            String token = generateToken();
+            String jmtk = generateToken();
 
-            // TODO: 2023/6/6 自定义一个 repository 使用 redis 的形式进行存储，在存储前生成好自定义 token 然后将对应关系存到 redis 中
             // store custom token -> accessToken info
-            redisTemplate.opsForValue().set(String.format(OAuth2Constant.JMTK_KEY_FORMAT, token), oAuth2AccessToken);
+            redisTemplate.opsForValue().set(String.format(OAuth2Constant.JMTK_KEY_FORMAT, jmtk),
+                    new OAuth2Token(oAuth2AccessToken.getAccess_token(), oAuth2AccessToken.getToken_type()),
+                    oAuth2Properties.getToken().getAccessTokenTimeout(),
+                    TimeUnit.SECONDS);
+
+            // 存储 accessToken 对应 jmtk，为了删除 token 时能反查 jmtk，进而删除 jmtk
+            oAuth2AuthorizationService.saveJmtk(oAuth2AccessToken.getAccess_token(), jmtk);
 
             return Result.ok(Map.of(
-                    "accessToken", token,
+                    "accessToken", jmtk,
                     "refreshToken", oAuth2AccessToken.getRefresh_token(),
                     "scope", oAuth2AccessToken.getScope(),
                     "tokenType", oAuth2AccessToken.getToken_type(),
@@ -116,9 +129,9 @@ public class OAuth2Controller {
             OAuth2Error oAuth2Error = objectMapper.readValue(result, OAuth2Error.class);
 
             return Result.ok(Map.of(
-                    "error_description", oAuth2Error.getError_description(),
+                    "errorDescription", oAuth2Error.getError_description(),
                     "error", oAuth2Error.getError(),
-                    "error_uri", oAuth2Error.getError_uri()
+                    "errorUri", oAuth2Error.getError_uri()
             ));
         }
     }
@@ -135,6 +148,7 @@ public class OAuth2Controller {
      * @return 令牌
      */
     private String generateToken() {
+        // FIXME: 2023/6/8 暂定 UUID 作为自定义 token
         return UUID.fastUUID().toString();
     }
 

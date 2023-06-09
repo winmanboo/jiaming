@@ -3,11 +3,14 @@ package com.deepcode.jiaming.uaa.config;
 import cn.hutool.core.text.CharSequenceUtil;
 import com.deepcode.jiaming.constants.AuthConstant;
 import com.deepcode.jiaming.exception.JiamingException;
+import com.deepcode.jiaming.result.Result;
 import com.deepcode.jiaming.uaa.constants.Oauth2Constant;
 import com.deepcode.jiaming.uaa.deserializer.LongMixin;
 import com.deepcode.jiaming.uaa.deserializer.SecurityUserMixin;
 import com.deepcode.jiaming.uaa.entity.SecurityUser;
 import com.deepcode.jiaming.uaa.properties.OAuth2Properties;
+import com.deepcode.jiaming.uaa.repository.JmtkJdbcOAuth2AuthorizationService;
+import com.deepcode.jiaming.utils.ResponseUtil;
 import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jose.jwk.JWKSet;
@@ -22,6 +25,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.Authentication;
@@ -30,12 +34,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.jackson2.SecurityJackson2Modules;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
-import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.server.authorization.JdbcOAuth2AuthorizationConsentService;
-import org.springframework.security.oauth2.server.authorization.JdbcOAuth2AuthorizationService;
-import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationConsentService;
-import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationService;
+import org.springframework.security.oauth2.server.authorization.*;
+import org.springframework.security.oauth2.server.authorization.authentication.OAuth2TokenRevocationAuthenticationToken;
 import org.springframework.security.oauth2.server.authorization.client.JdbcRegisteredClientRepository;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
@@ -44,14 +45,16 @@ import org.springframework.security.oauth2.server.authorization.config.annotatio
 import org.springframework.security.oauth2.server.authorization.jackson2.OAuth2AuthorizationServerJackson2Module;
 import org.springframework.security.oauth2.server.authorization.settings.AuthorizationServerSettings;
 import org.springframework.security.oauth2.server.authorization.settings.ClientSettings;
+import org.springframework.security.oauth2.server.authorization.settings.TokenSettings;
 import org.springframework.security.oauth2.server.authorization.token.JwtEncodingContext;
 import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenCustomizer;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 
+import java.time.Duration;
 import java.util.List;
-import java.util.Set;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -67,11 +70,27 @@ public class AuthorizationServerConfig {
 
     @Bean
     @Order(Ordered.HIGHEST_PRECEDENCE)
-    public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity httpSecurity) throws Exception {
+    public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity httpSecurity,
+                                                                      JmtkJdbcOAuth2AuthorizationService authorizationService)
+            throws Exception {
         OAuth2AuthorizationServerConfigurer authorizationServerConfigurer =
                 new OAuth2AuthorizationServerConfigurer();
         RequestMatcher endpointsMatcher = authorizationServerConfigurer
                 .getEndpointsMatcher();
+        // revoke oauth2 access token success handler
+        authorizationServerConfigurer.tokenRevocationEndpoint(config ->
+                config.revocationResponseHandler((request, response, authentication) -> {
+                    OAuth2TokenRevocationAuthenticationToken authenticationToken =
+                            (OAuth2TokenRevocationAuthenticationToken) authentication;
+                    // 查询并删除对应的 authorization 信息，同时会删除 jmtk
+                    OAuth2Authorization authorization =
+                            authorizationService.findByToken(authenticationToken.getToken(), OAuth2TokenType.ACCESS_TOKEN);
+                    if (Objects.nonNull(authorization)) {
+                        authorizationService.remove(authorization);
+                    }
+                    ResponseUtil.out(response, Result.ok());
+                })
+        );
 
         /*authorizationServerConfigurer.oidc(oidc -> {
             oidc.userInfoEndpoint(userInfoEndpoint -> {
@@ -105,9 +124,13 @@ public class AuthorizationServerConfig {
     }
 
     @Bean
-    public OAuth2AuthorizationService authorizationService(JdbcTemplate jdbcTemplate,
-                                                           RegisteredClientRepository registeredClientRepository) {
-        JdbcOAuth2AuthorizationService authorizationService = new JdbcOAuth2AuthorizationService(jdbcTemplate, registeredClientRepository);
+    public JmtkJdbcOAuth2AuthorizationService authorizationService(JdbcTemplate jdbcTemplate,
+                                                                   RegisteredClientRepository registeredClientRepository,
+                                                                   RedisTemplate<String, Object> redisTemplate) {
+        JmtkJdbcOAuth2AuthorizationService authorizationService = new JmtkJdbcOAuth2AuthorizationService(jdbcTemplate,
+                registeredClientRepository,
+                redisTemplate,
+                oAuth2Properties);
         JdbcOAuth2AuthorizationService.OAuth2AuthorizationRowMapper rowMapper =
                 new JdbcOAuth2AuthorizationService.OAuth2AuthorizationRowMapper(registeredClientRepository);
         JdbcOAuth2AuthorizationService.OAuth2AuthorizationParametersMapper parametersMapper =
@@ -145,8 +168,6 @@ public class AuthorizationServerConfig {
         OAuth2Properties.Jwk jwk = oAuth2Properties.getJwk();
         RSAKey rsaKey = new RSAKey.Builder(jwk.getPublicKey())
                 .privateKey(jwk.getPrivateKey())
-                // FIXME: 2023/5/25 keyId 不要每次都用 UUID 生成
-//                .keyID(UUID.randomUUID().toString())
                 .build();
         JWKSet jwkSet = new JWKSet(rsaKey);
         return new ImmutableJWKSet<>(jwkSet);
@@ -174,14 +195,12 @@ public class AuthorizationServerConfig {
         return context -> {
             Authentication authentication = context.getPrincipal();
             // 用户的权限（角色）
-            Set<String> authorities = authentication.getAuthorities()
+            /*Set<String> authorities = authentication.getAuthorities()
                     .stream()
                     .map(GrantedAuthority::getAuthority)
-                    .collect(Collectors.toSet());
+                    .collect(Collectors.toSet());*/
 
             Object principal = authentication.getPrincipal();
-
-            JwtClaimsSet.Builder claimsBuilder = context.getClaims().claim(AuthConstant.AUTHORITY_CLAIM_NAME, authorities);
 
             if (principal instanceof String) {
                 // 客户端模式 principal 为 clientId
@@ -190,9 +209,14 @@ public class AuthorizationServerConfig {
                 // 授权码模式 principal 为 SecurityUser
                 SecurityUser securityUser = (SecurityUser) principal;
                 // 添加权限信息
-                claimsBuilder.claim(AuthConstant.IS_ADMIN_CLAIM_NAME, securityUser.getIsAdmin())
+                List<String> authorities = securityUser.getAuthorities().stream()
+                        .map(GrantedAuthority::getAuthority)
+                        .collect(Collectors.toList());
+                context.getClaims().claim(AuthConstant.AUTHORITY_CLAIM_NAME, authorities)
+                        .claim(AuthConstant.IS_ADMIN_CLAIM_NAME, securityUser.getIsAdmin() == 1)
                         .claim(AuthConstant.TENANT_CLAIM_NAME, securityUser.getTenantId())
-                        .claim(AuthConstant.USER_ID_CLAIM_NAME, securityUser.getUserId());
+                        .claim(AuthConstant.USER_ID_CLAIM_NAME, securityUser.getUserId())
+                        .claim(AuthConstant.USER_NAME_CLAIM_NAME, securityUser.getUsername());
             }
         };
     }
@@ -222,6 +246,10 @@ public class AuthorizationServerConfig {
                 .clientSecret(passwordEncoder.encode(Oauth2Constant.DEFAULT_CLIENT_SECRET))
                 .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
                 .clientSettings(ClientSettings.builder().requireAuthorizationConsent(true).build())
+                .tokenSettings(TokenSettings.builder()
+                        .accessTokenTimeToLive(Duration.ofSeconds(oAuth2Properties.getToken().getAccessTokenTimeout()))
+                        .refreshTokenTimeToLive(Duration.ofSeconds(oAuth2Properties.getToken().getRefreshTokenTimeout()))
+                        .build())
                 .build();
     }
 }
