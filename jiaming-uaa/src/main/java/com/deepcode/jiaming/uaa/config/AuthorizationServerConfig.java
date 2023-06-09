@@ -3,14 +3,13 @@ package com.deepcode.jiaming.uaa.config;
 import cn.hutool.core.text.CharSequenceUtil;
 import com.deepcode.jiaming.constants.AuthConstant;
 import com.deepcode.jiaming.exception.JiamingException;
-import com.deepcode.jiaming.result.Result;
 import com.deepcode.jiaming.uaa.constants.Oauth2Constant;
 import com.deepcode.jiaming.uaa.deserializer.LongMixin;
 import com.deepcode.jiaming.uaa.deserializer.SecurityUserMixin;
 import com.deepcode.jiaming.uaa.entity.SecurityUser;
+import com.deepcode.jiaming.uaa.handler.RevocationSuccessHandler;
 import com.deepcode.jiaming.uaa.properties.OAuth2Properties;
 import com.deepcode.jiaming.uaa.repository.JmtkJdbcOAuth2AuthorizationService;
-import com.deepcode.jiaming.utils.ResponseUtil;
 import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jose.jwk.JWKSet;
@@ -35,8 +34,9 @@ import org.springframework.security.jackson2.SecurityJackson2Modules;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.server.authorization.*;
-import org.springframework.security.oauth2.server.authorization.authentication.OAuth2TokenRevocationAuthenticationToken;
+import org.springframework.security.oauth2.server.authorization.JdbcOAuth2AuthorizationConsentService;
+import org.springframework.security.oauth2.server.authorization.JdbcOAuth2AuthorizationService;
+import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationConsentService;
 import org.springframework.security.oauth2.server.authorization.client.JdbcRegisteredClientRepository;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
@@ -54,7 +54,6 @@ import org.springframework.security.web.util.matcher.RequestMatcher;
 
 import java.time.Duration;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -79,18 +78,7 @@ public class AuthorizationServerConfig {
                 .getEndpointsMatcher();
         // revoke oauth2 access token success handler
         authorizationServerConfigurer.tokenRevocationEndpoint(config ->
-                config.revocationResponseHandler((request, response, authentication) -> {
-                    OAuth2TokenRevocationAuthenticationToken authenticationToken =
-                            (OAuth2TokenRevocationAuthenticationToken) authentication;
-                    // 查询并删除对应的 authorization 信息，同时会删除 jmtk
-                    OAuth2Authorization authorization =
-                            authorizationService.findByToken(authenticationToken.getToken(), OAuth2TokenType.ACCESS_TOKEN);
-                    if (Objects.nonNull(authorization)) {
-                        authorizationService.remove(authorization);
-                    }
-                    ResponseUtil.out(response, Result.ok());
-                })
-        );
+                config.revocationResponseHandler(new RevocationSuccessHandler(authorizationService)));
 
         /*authorizationServerConfigurer.oidc(oidc -> {
             oidc.userInfoEndpoint(userInfoEndpoint -> {
