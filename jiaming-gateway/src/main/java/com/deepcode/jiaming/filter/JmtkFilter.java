@@ -51,8 +51,7 @@ public class JmtkFilter implements WebFilter {
 
         String jmtk = tokenValues.get(0);
 
-        OAuth2Token oAuth2Token = (OAuth2Token)
-                redisTemplate.opsForValue()
+        OAuth2Token oAuth2Token = (OAuth2Token) redisTemplate.opsForValue()
                         .get(String.format(OAuth2Constant.JMTK_KEY_FORMAT, jmtk));
 
         if (Objects.isNull(oAuth2Token)) {

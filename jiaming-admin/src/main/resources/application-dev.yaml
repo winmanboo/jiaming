@@ -4,3 +4,10 @@ spring:
     username: root
     password: mingge123
     driver-class-name: com.mysql.cj.jdbc.Driver
+  cache:
+    type: redis
+    redis:
+      cache-null-values: true
+  data:
+    redis:
+      password: wzm123

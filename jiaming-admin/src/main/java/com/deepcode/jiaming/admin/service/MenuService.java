@@ -2,6 +2,9 @@ package com.deepcode.jiaming.admin.service;
 
 import com.deepcode.jiaming.admin.entity.Menu;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.deepcode.jiaming.admin.vo.RouteVo;
+
+import java.util.List;
 
 /**
  * <p>
@@ -13,4 +16,10 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface MenuService extends IService<Menu> {
 
+    /**
+     * 加载当前用户可见的路由列表
+     *
+     * @return 当前用户可见的路由
+     */
+    List<RouteVo> loadRouteList();
 }

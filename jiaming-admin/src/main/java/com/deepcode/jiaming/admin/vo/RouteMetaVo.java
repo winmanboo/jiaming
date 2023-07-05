@@ -3,13 +3,15 @@ package com.deepcode.jiaming.admin.vo;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import java.io.Serializable;
+
 /**
  * 路由源信息
  * @author winmanboo
  * @date 2023/6/8 18:44
  */
 @Data
-public class RouteMetaVo {
+public class RouteMetaVo implements Serializable {
     @ApiModelProperty("设置该路由在侧边栏和面包屑中展示的名字")
     private String title;
 

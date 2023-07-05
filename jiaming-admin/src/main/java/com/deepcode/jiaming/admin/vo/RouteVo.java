@@ -3,13 +3,15 @@ package com.deepcode.jiaming.admin.vo;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import java.io.Serializable;
+
 /**
  * 路由
  * @author winmanboo
  * @date 2023/6/8 18:43
  */
 @Data
-public class RouteVo {
+public class RouteVo implements Serializable {
     @ApiModelProperty("id")
     private Long id;
 
