@@ -4,6 +4,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * 路由
@@ -38,4 +39,7 @@ public class RouteVo implements Serializable {
 
     @ApiModelProperty("路由的元信息")
     private RouteMetaVo meta;
+
+    @ApiModelProperty("子路由")
+    private List<RouteVo> children;
 }

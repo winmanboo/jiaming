@@ -4,9 +4,12 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.deepcode.jiaming.admin.entity.Menu;
 import com.deepcode.jiaming.admin.mapper.MenuMapper;
 import com.deepcode.jiaming.admin.service.MenuService;
+import com.deepcode.jiaming.admin.utils.RouteHelper;
 import com.deepcode.jiaming.admin.vo.RouteMetaVo;
 import com.deepcode.jiaming.admin.vo.RouteVo;
+import com.deepcode.jiaming.security.context.UserInfoContext;
 import com.deepcode.jiaming.utils.BooleanNumUtil;
+import com.deepcode.jiaming.utils.TenantUtil;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -24,11 +27,17 @@ import java.util.stream.Collectors;
 public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements MenuService {
 
     @Override
-    // @Cacheable(cacheNames = CacheConstants.ROUTE_CACHE_NAME, key = "#root.method")
     public List<RouteVo> loadRouteList() {
-        List<Menu> menus = list();
+        Long tenantId = UserInfoContext.get().getTenantId();
 
-        return menus.stream().map(menu -> {
+        List<Menu> menus; // 菜单权限
+        if (TenantUtil.isPlatformAdmin(tenantId)) { // 如果是平台管理员获取全量菜单
+            menus = list();
+        } else { // 如果不是，获取用户可见菜单
+            menus = lambdaQuery().eq(Menu::getTenantId, tenantId).list();
+        }
+
+        List<RouteVo> routes = menus.stream().map(menu -> {
             RouteVo route = new RouteVo();
             route.setAlwaysShow(BooleanNumUtil.isTrue(menu.getAlwaysShow()));
             route.setComponent(menu.getComponent());
@@ -50,5 +59,7 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
             route.setMeta(meta);
             return route;
         }).collect(Collectors.toList());
+
+        return RouteHelper.generateRouteTree(routes);
     }
 }
