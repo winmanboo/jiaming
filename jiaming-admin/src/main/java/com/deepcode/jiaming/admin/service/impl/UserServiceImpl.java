@@ -1,10 +1,16 @@
 package com.deepcode.jiaming.admin.service.impl;
 
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.deepcode.jiaming.admin.entity.User;
 import com.deepcode.jiaming.admin.mapper.UserMapper;
+import com.deepcode.jiaming.admin.mapping.UserMapping;
 import com.deepcode.jiaming.admin.service.UserService;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.deepcode.jiaming.admin.vo.UserVo;
+import com.deepcode.jiaming.security.context.UserInfoContext;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.util.Objects;
 
 /**
  * <p>
@@ -15,6 +21,14 @@ import org.springframework.stereotype.Service;
  * @since 2023-05-20
  */
 @Service
+@RequiredArgsConstructor
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
+    private final UserMapping userMapping;
 
+    @Override
+    public UserVo getCurrentUserInfo() {
+        Long userId = UserInfoContext.get().getUserId();
+        User user = lambdaQuery().eq(Objects.nonNull(userId), User::getId, userId).one();
+        return userMapping.toUserVo(user);
+    }
 }
