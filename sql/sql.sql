@@ -108,7 +108,8 @@ create table sys_menu
     updater     varchar(64)              default null comment '更新者',
     create_time datetime        not null default current_timestamp comment '创建时间',
     update_time datetime        not null default current_timestamp on update current_timestamp comment '更新时间',
-    deleted     tinyint         not null default 0 comment '是否删除 0:未删除 1:删除'
+    deleted     tinyint         not null default 0 comment '是否删除 0:未删除 1:删除',
+    tenant_id   bigint unsigned not null default 0 comment '租户 id，若为 0 表示系统管理员'
 ) engine InnoDB comment '系统菜单';
 
 create table sys_role_menu
