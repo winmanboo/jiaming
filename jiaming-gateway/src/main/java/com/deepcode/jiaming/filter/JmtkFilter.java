@@ -17,6 +17,7 @@ import org.springframework.web.server.WebFilterChain;
 import reactor.core.publisher.Mono;
 
 import javax.annotation.Nonnull;
+import java.text.MessageFormat;
 import java.util.List;
 import java.util.Objects;
 
@@ -52,7 +53,7 @@ public class JmtkFilter implements WebFilter {
         String jmtk = tokenValues.get(0);
 
         OAuth2Token oAuth2Token = (OAuth2Token) redisTemplate.opsForValue()
-                        .get(String.format(OAuth2Constant.JMTK_KEY_FORMAT, jmtk));
+                .get(String.format(OAuth2Constant.JMTK_KEY_FORMAT, jmtk));
 
         if (Objects.isNull(oAuth2Token)) {
             return chain.filter(exchange);
@@ -60,7 +61,10 @@ public class JmtkFilter implements WebFilter {
 
         ServerHttpRequest newRequest = request.mutate()
                 .header(OAuth2Constant.AUTHORIZATION_HEADER,
-                        oAuth2Token.getTokenType() + " " + oAuth2Token.getAccessToken())
+                        MessageFormat.format("{0} {1}",
+                                oAuth2Token.getTokenType(),
+                                oAuth2Token.getAccessToken())
+                )
                 .build();
 
         return chain.filter(exchange.mutate().request(newRequest).build());

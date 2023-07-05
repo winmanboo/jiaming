@@ -17,6 +17,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.java.Log;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
@@ -30,6 +31,7 @@ import javax.annotation.Nonnull;
  * @author winmanboo
  * @date 2023/5/20 22:28
  */
+@Log
 @Component
 @RequiredArgsConstructor
 @Order(Ordered.HIGHEST_PRECEDENCE)
@@ -43,7 +45,6 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
         if (CharSequenceUtil.isNotEmpty(token)) {
             // 根据 token 拿到用户信息
             try {
-                // FIXME: 2023/6/8 authorization 里面的 accessToken 已经被删除，但这里还是能解析
                 UserInfo userInfo = parseUserInfo(token);
                 UserInfoContext.set(userInfo);
                 filterChain.doFilter(request, response);
@@ -59,7 +60,13 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
 
     private String getToken(HttpServletRequest request) {
         String token = request.getHeader(securityProperties.getTokenHeader());
-        return CharSequenceUtil.removePrefixIgnoreCase(token, "bearer ");
+        String[] tokenSplit = token.split(" ");
+        if (tokenSplit.length != 2) {
+            log.info("token format error : " + token);
+            return null;
+        }
+        String tokenType = tokenSplit[0];
+        return CharSequenceUtil.removePrefixIgnoreCase(token, tokenType);
     }
 
     /**
