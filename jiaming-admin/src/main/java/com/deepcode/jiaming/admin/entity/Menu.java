@@ -3,16 +3,11 @@ package com.deepcode.jiaming.admin.entity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import java.io.Serializable;
-import java.time.LocalDateTime;
-
 import com.deepcode.jiaming.base.BaseEntity;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
 
 /**
  * <p>
@@ -81,4 +76,7 @@ public class Menu extends BaseEntity {
 
     @ApiModelProperty("是否删除 0:未删除 1:删除")
     private Integer deleted;
+
+    @ApiModelProperty("租户 id，若为 0 表示是系统管理员")
+    private Long tenantId;
 }
