@@ -10,4 +10,6 @@ spring:
       cache-null-values: true
   data:
     redis:
-      password: wzm123
+      password: jiaming
+      host: 121.5.183.150
+      port: 6380
