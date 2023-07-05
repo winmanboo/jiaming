@@ -1,14 +1,12 @@
 package com.deepcode.jiaming.admin.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.deepcode.jiaming.admin.constans.CacheConstants;
 import com.deepcode.jiaming.admin.entity.Menu;
 import com.deepcode.jiaming.admin.mapper.MenuMapper;
 import com.deepcode.jiaming.admin.service.MenuService;
 import com.deepcode.jiaming.admin.vo.RouteMetaVo;
 import com.deepcode.jiaming.admin.vo.RouteVo;
 import com.deepcode.jiaming.utils.BooleanNumUtil;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -26,7 +24,7 @@ import java.util.stream.Collectors;
 public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements MenuService {
 
     @Override
-    @Cacheable(cacheNames = CacheConstants.ROUTE_CACHE_NAME, key = "#root.method")
+    // @Cacheable(cacheNames = CacheConstants.ROUTE_CACHE_NAME, key = "#root.method")
     public List<RouteVo> loadRouteList() {
         List<Menu> menus = list();
 

@@ -32,11 +32,13 @@
 
         <spring.cloud.alibaba.version>2022.0.0.0-RC1</spring.cloud.alibaba.version>
         <spring.cloud.version>2022.0.0</spring.cloud.version>
+        <authorization.server.version>1.0.2</authorization.server.version>
         <mybatis.plus.version>3.5.3.1</mybatis.plus.version>
         <orika.version>1.5.4</orika.version>
         <mysql.version>8.0.31</mysql.version>
         <knife4j.version>3.0.3</knife4j.version>
         <hutool.version>5.8.17</hutool.version>
+        <mapstruct.version>1.5.5.Final</mapstruct.version>
     </properties>
 
     <dependencyManagement>
@@ -61,6 +63,12 @@
                 <groupId>com.deepcode.jiaming</groupId>
                 <artifactId>jiaming-spring-boot-starter-security</artifactId>
                 <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.springframework.security</groupId>
+                <artifactId>spring-security-oauth2-authorization-server</artifactId>
+                <version>${authorization.server.version}</version>
             </dependency>
 
             <dependency>
@@ -109,6 +117,18 @@
                 <groupId>cn.hutool</groupId>
                 <artifactId>hutool-all</artifactId>
                 <version>${hutool.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.mapstruct</groupId>
+                <artifactId>mapstruct</artifactId>
+                <version>${mapstruct.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.mapstruct</groupId>
+                <artifactId>mapstruct-processor</artifactId>
+                <version>${mapstruct.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
