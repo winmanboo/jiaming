@@ -57,7 +57,8 @@ create table sys_user
     create_time datetime        not null default current_timestamp comment '创建时间',
     update_time datetime        not null default current_timestamp on update current_timestamp comment '更新时间',
     deleted     tinyint         not null default 0 comment '是否删除 0:未删除 1:删除',
-    tenant_id   bigint          not null default 0 comment '租户id，如果为0则为平台用户'
+    tenant_id   bigint          not null default 0 comment '租户id，如果为0则为平台用户',
+    is_admin    tinyint         not null default 0 comment '是否是管理员 0：不是 1：是'
 ) engine InnoDB comment '系统用户';
 
 create table sys_role

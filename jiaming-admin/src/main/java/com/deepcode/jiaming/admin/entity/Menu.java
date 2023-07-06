@@ -76,7 +76,4 @@ public class Menu extends BaseEntity {
 
     @ApiModelProperty("是否删除 0:未删除 1:删除")
     private Integer deleted;
-
-    @ApiModelProperty("租户 id，若为 0 表示是系统管理员")
-    private Long tenantId;
 }
