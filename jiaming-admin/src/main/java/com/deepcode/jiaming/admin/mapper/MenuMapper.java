@@ -23,4 +23,12 @@ public interface MenuMapper extends BaseMapper<Menu> {
      * @return {@link List}<{@link Menu}>
      */
     List<Menu> loadMenuListByMenuIds(@Param("menuIds") List<Long> menuIds);
+
+    /**
+     * 通过用户id加载菜单列表
+     *
+     * @param userId 用户id
+     * @return {@link List}<{@link Menu}>
+     */
+    List<Menu> loadMenuListByUserId(@Param("userId") Long userId);
 }

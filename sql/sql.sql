@@ -85,7 +85,6 @@ create table sys_user_role
     updater     varchar(64)              default null comment '更新者',
     create_time datetime        not null default current_timestamp comment '创建时间',
     update_time datetime        not null default current_timestamp on update current_timestamp comment '更新时间',
-    deleted     tinyint         not null default 0 comment '是否删除 0:未删除 1:删除',
     tenant_id   bigint unsigned not null default 0 comment '租户id'
 ) engine InnoDB comment '用户与角色关联表';
 
@@ -110,7 +109,7 @@ create table sys_menu
     create_time datetime        not null default current_timestamp comment '创建时间',
     update_time datetime        not null default current_timestamp on update current_timestamp comment '更新时间',
     deleted     tinyint         not null default 0 comment '是否删除 0:未删除 1:删除',
-    tenant_id   bigint unsigned not null default 0 comment '租户 id，若为 0 表示系统管理员'
+    enable      tinyint         not null default 1 comment '是否启用 1：启用 0：禁用'
 ) engine InnoDB comment '系统菜单';
 
 create table sys_role_menu

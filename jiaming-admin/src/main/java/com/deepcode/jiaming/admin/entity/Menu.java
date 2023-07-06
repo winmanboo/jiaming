@@ -76,4 +76,7 @@ public class Menu extends BaseEntity {
 
     @ApiModelProperty("是否删除 0:未删除 1:删除")
     private Integer deleted;
+
+    @ApiModelProperty("是否启用 1：启用 0：禁用")
+    private Integer enable;
 }

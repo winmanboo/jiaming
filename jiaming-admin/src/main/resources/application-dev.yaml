@@ -13,3 +13,10 @@ spring:
       password: jiaming
       host: 121.5.183.150
       port: 6380
+
+mybatis-plus:
+  global-config:
+    db-config:
+      logic-delete-field: delete
+      logic-not-delete-value: 0
+      logic-delete-value: 1
