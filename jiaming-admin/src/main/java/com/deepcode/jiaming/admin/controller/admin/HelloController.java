@@ -1,6 +1,6 @@
 package com.deepcode.jiaming.admin.controller.admin;
 
-import com.deepcode.jiaming.security.context.UserInfoContext;
+import com.deepcode.jiaming.context.UserInfoContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

@@ -1,4 +1,4 @@
-package com.deepcode.jiaming.security.domain;
+package com.deepcode.jiaming.entity;
 
 import lombok.Builder;
 import lombok.Data;
