@@ -3,7 +3,7 @@
 <mapper namespace="com.deepcode.jiaming.admin.mapper.MenuMapper">
 
     <select id="loadMenuListByMenuIds" resultType="com.deepcode.jiaming.admin.entity.Menu">
-        select * from sys_menu where id in
+        select * from sys_menu force index (`PRIMARY`) where id in
         <foreach collection="menuIds" open="(" close=")" item="menuId" separator=",">
             #{menuId}
         </foreach>

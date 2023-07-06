@@ -38,7 +38,6 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
         if (SystemUtil.isPlatformAdmin(tenantId)) { // 如果是平台管理员获取全量菜单
             menus = list();
         } else { // 如果不是，获取用户可见菜单
-            // 首先去租户套餐表中查询平台给租户分配的可见的菜单 id
             List<Long> menuIds = tenantService.loadPackageMenuIds(tenantId);
             menus = baseMapper.loadMenuListByMenuIds(menuIds);
         }
