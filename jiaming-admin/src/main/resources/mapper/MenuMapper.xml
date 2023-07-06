@@ -2,4 +2,10 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.deepcode.jiaming.admin.mapper.MenuMapper">
 
+    <select id="loadMenuListByMenuIds" resultType="com.deepcode.jiaming.admin.entity.Menu">
+        select * from sys_menu where id in
+        <foreach collection="menuIds" open="(" close=")" item="menuId" separator=",">
+            #{menuId}
+        </foreach>
+    </select>
 </mapper>

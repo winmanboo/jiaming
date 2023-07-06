@@ -2,4 +2,10 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.deepcode.jiaming.admin.mapper.TenantMapper">
 
+    <select id="loadPackageMenuIds" resultType="java.lang.String">
+        select pk.menu_ids
+        from sys_tenant_package pk
+                 inner join sys_tenant tt
+                            on pk.id = tt.package_id and tt.id = #{tenantId}
+    </select>
 </mapper>

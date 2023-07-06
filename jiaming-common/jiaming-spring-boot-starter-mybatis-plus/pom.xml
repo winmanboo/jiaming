@@ -34,11 +34,6 @@
             <artifactId>mysql-connector-java</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>com.deepcode.jiaming</groupId>
-            <artifactId>jiaming-spring-boot-starter-security</artifactId>
-        </dependency>
-
     </dependencies>
 
 </project>

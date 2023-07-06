@@ -3,6 +3,8 @@ package com.deepcode.jiaming.admin.service;
 import com.deepcode.jiaming.admin.entity.Tenant;
 import com.baomidou.mybatisplus.extension.service.IService;
 
+import java.util.List;
+
 /**
  * <p>
  * 租户表 服务类
@@ -13,4 +15,11 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface TenantService extends IService<Tenant> {
 
+    /**
+     * 加载套餐绑定的菜单id
+     *
+     * @param tenantId 租户id
+     * @return {@link List}<{@link Long}>
+     */
+    List<Long> loadPackageMenuIds(Long tenantId);
 }

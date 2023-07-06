@@ -1,4 +1,4 @@
-package com.deepcode.jiaming.filter;
+package com.deepcode.jiaming.security.filter;
 
 import cn.hutool.core.convert.NumberWithFormat;
 import cn.hutool.core.text.CharSequenceUtil;
@@ -8,8 +8,8 @@ import cn.hutool.jwt.JWTPayload;
 import cn.hutool.jwt.JWTUtil;
 import com.deepcode.jiaming.constants.AuthConstant;
 import com.deepcode.jiaming.constants.OAuth2Constant;
-import com.deepcode.jiaming.context.UserInfoContext;
-import com.deepcode.jiaming.entity.UserInfo;
+import com.deepcode.jiaming.security.context.UserInfoContext;
+import com.deepcode.jiaming.security.domain.UserInfo;
 import com.deepcode.jiaming.result.Result;
 import com.deepcode.jiaming.result.UserResultStatus;
 import com.deepcode.jiaming.utils.ResponseUtil;
@@ -36,6 +36,7 @@ import javax.annotation.Nonnull;
 @RequiredArgsConstructor
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class TokenAuthenticationFilter extends OncePerRequestFilter {
+
     @Override
     protected void doFilterInternal(@Nonnull HttpServletRequest request, @Nonnull HttpServletResponse response,
                                     @Nonnull FilterChain filterChain) {

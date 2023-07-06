@@ -6,7 +6,7 @@ import com.deepcode.jiaming.admin.mapper.UserMapper;
 import com.deepcode.jiaming.admin.mapping.UserMapping;
 import com.deepcode.jiaming.admin.service.UserService;
 import com.deepcode.jiaming.admin.vo.UserVo;
-import com.deepcode.jiaming.context.UserInfoContext;
+import com.deepcode.jiaming.security.context.UserInfoContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

@@ -1,6 +1,6 @@
-package com.deepcode.jiaming.context;
+package com.deepcode.jiaming.security.context;
 
-import com.deepcode.jiaming.entity.UserInfo;
+import com.deepcode.jiaming.security.domain.UserInfo;
 import lombok.experimental.UtilityClass;
 
 import java.util.Objects;
