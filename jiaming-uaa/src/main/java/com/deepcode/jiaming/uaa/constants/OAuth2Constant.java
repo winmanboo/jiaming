@@ -7,7 +7,7 @@ import lombok.experimental.UtilityClass;
  * @date 2023/6/6 15:35
  */
 @UtilityClass
-public class Oauth2Constant {
+public class OAuth2Constant {
     /**
      * 初始的 clientId
      */

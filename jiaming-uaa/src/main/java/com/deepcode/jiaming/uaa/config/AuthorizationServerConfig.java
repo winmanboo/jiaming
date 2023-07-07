@@ -3,10 +3,13 @@ package com.deepcode.jiaming.uaa.config;
 import cn.hutool.core.text.CharSequenceUtil;
 import com.deepcode.jiaming.constants.AuthConstant;
 import com.deepcode.jiaming.exception.JiamingException;
-import com.deepcode.jiaming.uaa.constants.Oauth2Constant;
+import com.deepcode.jiaming.uaa.constants.OAuth2Constant;
+import com.deepcode.jiaming.uaa.constants.OAuth2GrantTypes;
 import com.deepcode.jiaming.uaa.deserializer.LongMixin;
 import com.deepcode.jiaming.uaa.deserializer.SecurityUserMixin;
 import com.deepcode.jiaming.uaa.entity.SecurityUser;
+import com.deepcode.jiaming.uaa.grant.CaptchaAuthenticationProvider;
+import com.deepcode.jiaming.uaa.grant.CaptchaGrantAuthenticationConverter;
 import com.deepcode.jiaming.uaa.handler.RevocationSuccessHandler;
 import com.deepcode.jiaming.uaa.properties.OAuth2Properties;
 import com.deepcode.jiaming.uaa.repository.JmtkJdbcOAuth2AuthorizationService;
@@ -26,6 +29,7 @@ import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -34,6 +38,8 @@ import org.springframework.security.jackson2.SecurityJackson2Modules;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.JwtEncoder;
+import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.oauth2.server.authorization.JdbcOAuth2AuthorizationConsentService;
 import org.springframework.security.oauth2.server.authorization.JdbcOAuth2AuthorizationService;
 import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationConsentService;
@@ -46,8 +52,7 @@ import org.springframework.security.oauth2.server.authorization.jackson2.OAuth2A
 import org.springframework.security.oauth2.server.authorization.settings.AuthorizationServerSettings;
 import org.springframework.security.oauth2.server.authorization.settings.ClientSettings;
 import org.springframework.security.oauth2.server.authorization.settings.TokenSettings;
-import org.springframework.security.oauth2.server.authorization.token.JwtEncodingContext;
-import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenCustomizer;
+import org.springframework.security.oauth2.server.authorization.token.*;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.util.matcher.RequestMatcher;
@@ -70,8 +75,10 @@ public class AuthorizationServerConfig {
     @Bean
     @Order(Ordered.HIGHEST_PRECEDENCE)
     public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity httpSecurity,
-                                                                      JmtkJdbcOAuth2AuthorizationService authorizationService)
-            throws Exception {
+                                                                      JmtkJdbcOAuth2AuthorizationService authorizationService,
+                                                                      AuthenticationManager authenticationManager,
+                                                                      OAuth2TokenGenerator<?> tokenGenerator,
+                                                                      RedisTemplate<String, Object> redisTemplate) throws Exception {
         OAuth2AuthorizationServerConfigurer authorizationServerConfigurer =
                 new OAuth2AuthorizationServerConfigurer();
         RequestMatcher endpointsMatcher = authorizationServerConfigurer
@@ -85,6 +92,19 @@ public class AuthorizationServerConfig {
                 userInfoEndpoint
             })
         })*/
+
+        CaptchaGrantAuthenticationConverter authenticationConverter = new CaptchaGrantAuthenticationConverter(redisTemplate);
+        CaptchaAuthenticationProvider authenticationProvider =
+                new CaptchaAuthenticationProvider(authenticationManager, tokenGenerator, authorizationService);
+
+        authorizationServerConfigurer.authorizationServerMetadataEndpoint(metadata ->
+                        // 让认证服务器元数据中有自定义的认证方式
+                        metadata.authorizationServerMetadataCustomizer(customizer ->
+                                customizer.grantType(OAuth2GrantTypes.CAPTCHA.getValue())))
+                // 添加自定义认证类型
+                .tokenEndpoint(tokenEndpoint -> tokenEndpoint
+                        .accessTokenRequestConverter(authenticationConverter)
+                        .authenticationProvider(authenticationProvider));
 
         httpSecurity.securityMatcher(endpointsMatcher)
                 .exceptionHandling()
@@ -103,7 +123,7 @@ public class AuthorizationServerConfig {
     @Bean
     public JdbcRegisteredClientRepository jdbcRegisteredClientRepository(JdbcTemplate jdbcTemplate, PasswordEncoder passwordEncoder) {
         JdbcRegisteredClientRepository repository = new JdbcRegisteredClientRepository(jdbcTemplate);
-        RegisteredClient defaultClient = repository.findByClientId(Oauth2Constant.DEFAULT_CLIENT_ID);
+        RegisteredClient defaultClient = repository.findByClientId(OAuth2Constant.DEFAULT_CLIENT_ID);
         if (defaultClient == null) {
             RegisteredClient client = createDefaultClient(passwordEncoder);
             repository.save(client);
@@ -166,6 +186,22 @@ public class AuthorizationServerConfig {
         return OAuth2AuthorizationServerConfiguration.jwtDecoder(jwkSource);
     }
 
+    @Bean
+    public JwtEncoder jwtEncoder(JWKSource<SecurityContext> jwkSource) {
+        return new NimbusJwtEncoder(jwkSource);
+    }
+
+    @Bean
+    public OAuth2TokenGenerator<?> tokenGenerator(JwtEncoder jwtEncoder,
+                                                  OAuth2TokenCustomizer<JwtEncodingContext> customizer) {
+        JwtGenerator jwtGenerator = new JwtGenerator(jwtEncoder);
+        jwtGenerator.setJwtCustomizer(customizer);
+        return new DelegatingOAuth2TokenGenerator(
+                jwtGenerator, // access token
+                new OAuth2RefreshTokenGenerator() // refresh token
+        );
+    }
+
     /**
      * 配置 oauth2 的端点路径
      */
@@ -216,22 +252,23 @@ public class AuthorizationServerConfig {
      * @return 默认的客户端
      */
     private RegisteredClient createDefaultClient(PasswordEncoder passwordEncoder) {
-        String redirectUri = oAuth2Properties.getRedirectUri();
+        String redirectUri = oAuth2Properties.getGatewayUri() + "/jiaming/uaa/auth/code";
 
         if (CharSequenceUtil.isEmpty(redirectUri)) {
             throw new JiamingException("redirect uri can not be null");
         }
 
-        return RegisteredClient.withId(Oauth2Constant.DEFAULT_ID)
-                .clientId(Oauth2Constant.DEFAULT_CLIENT_ID)
+        return RegisteredClient.withId(OAuth2Constant.DEFAULT_ID)
+                .clientId(OAuth2Constant.DEFAULT_CLIENT_ID)
 //                .scope(OidcScopes.OPENID) // 需要支持 oidc
-                .scope(Oauth2Constant.DEFAULT_SCOPE)
+                .scope(OAuth2Constant.DEFAULT_SCOPE)
                 .redirectUri(redirectUri)
                 .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE) // 授权码模式
                 .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN) // 刷新 token 模式
                 .authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS) // 客户端模式
                 .authorizationGrantType(AuthorizationGrantType.JWT_BEARER) // 这种模式其实就是简化模式
-                .clientSecret(passwordEncoder.encode(Oauth2Constant.DEFAULT_CLIENT_SECRET))
+                .authorizationGrantType(OAuth2GrantTypes.CAPTCHA)
+                .clientSecret(passwordEncoder.encode(OAuth2Constant.DEFAULT_CLIENT_SECRET))
                 .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
                 .clientSettings(ClientSettings.builder().requireAuthorizationConsent(true).build())
                 .tokenSettings(TokenSettings.builder()

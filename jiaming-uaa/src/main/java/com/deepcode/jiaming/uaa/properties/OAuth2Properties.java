@@ -20,9 +20,9 @@ public class OAuth2Properties {
     private Jwk jwk;
 
     /**
-     * 默认的 oauth2 授权码模式重定向的前端地址
+     * 配置网关的地址
      */
-    private String redirectUri;
+    private String gatewayUri;
 
     /**
      * oauth2 令牌配置

@@ -43,18 +43,35 @@ spring:
             - Path=/jiaming/admin/**
           filters:
             - RewritePath=/jiaming/?(?<segment>.*), /$\{segment}
+        - id: oauth2-auth
+          uri: lb://jiaming-uaa
+          predicates:
+            - Path=/jiaming/uaa/oauth2/**
+          filters:
+            - RewritePath=/jiaming/uaa/oauth2/?(?<segment>.*), /oauth2/$\{segment}
         - id: jiaming-uaa
           uri: lb://jiaming-uaa
           predicates:
             - Path=/jiaming/uaa/**
           filters:
+            # 为什么要加这个 PreserveHostHeader Filter？
+            # 这个 Filter 的作用就是保留主机头，之所以这么做是因为网关转发 /oauth2/authorize 这个请求时，
+            # 认证服务只能拿到当前服务的地址和端口号，然后前端重定向，没有办法拿到之前的session，把之前的链接拿出来进行跳转导致的
+            # 解决方案请参考这篇文章的评论区：https://blog.csdn.net/CSDN877425287/article/details/110948221
+            # 以及：https://ask.csdn.net/questions/1061712
+            # TODO 另外待测试加一层 Nginx
+            #            - PreserveHostHeader
             - RewritePath=/jiaming/?(?<segment>.*), /$\{segment}
 
 gateway:
   white-list:
     ignore-urls:
-      - /jiaming/uaa/client/redirect_code
-      - /jiaming/uaa/oauth2/access_token
+      - /favicon.ico
+      #      - /jiaming/uaa/client/redirect_code
+      #      - /jiaming/uaa/oauth2/access_token
+      - /jiaming/uaa/oauth2/**
+      - /jiaming/uaa/auth/code
+      - /jiaming/uaa/auth/captcha
 
 logging:
   level:

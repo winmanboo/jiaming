@@ -1,20 +1,18 @@
 package com.deepcode.jiaming.uaa.controller;
 
-import cn.hutool.core.util.ArrayUtil;
 import com.deepcode.jiaming.exception.JiamingException;
 import com.deepcode.jiaming.result.Result;
-import com.deepcode.jiaming.uaa.constants.Oauth2Constant;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
 import org.springframework.security.oauth2.server.authorization.client.JdbcRegisteredClientRepository;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.Set;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 /**
  * 客户端控制器
@@ -57,9 +55,9 @@ public class ClientController {
      * @param clientId 客户端 id
      * @return
      */
-    @GetMapping("/redirect_code")
+    /*@GetMapping("/redirect_code")
     public String redirectCode() {
-        RegisteredClient client = registeredClientRepository.findByClientId(Oauth2Constant.DEFAULT_CLIENT_ID);
+        RegisteredClient client = registeredClientRepository.findByClientId(OAuth2Constant.DEFAULT_CLIENT_ID);
         if (client == null) {
             throw new JiamingException("无法获取客户端信息");
         }
@@ -104,5 +102,5 @@ public class ClientController {
         }
 
         return redirectUri;
-    }
+    }*/
 }
