@@ -11,6 +11,7 @@ import com.deepcode.jiaming.uaa.entity.SecurityUser;
 import com.deepcode.jiaming.uaa.grant.CaptchaAuthenticationProvider;
 import com.deepcode.jiaming.uaa.grant.CaptchaGrantAuthenticationConverter;
 import com.deepcode.jiaming.uaa.handler.RevocationSuccessHandler;
+import com.deepcode.jiaming.uaa.handler.token.SendResultAccessTokenResponse;
 import com.deepcode.jiaming.uaa.properties.OAuth2Properties;
 import com.deepcode.jiaming.uaa.repository.JmtkJdbcOAuth2AuthorizationService;
 import com.fasterxml.jackson.databind.Module;
@@ -103,7 +104,8 @@ public class AuthorizationServerConfig {
                 // 添加自定义认证类型
                 .tokenEndpoint(tokenEndpoint -> tokenEndpoint
                         .accessTokenRequestConverter(authenticationConverter)
-                        .authenticationProvider(authenticationProvider));
+                        .authenticationProvider(authenticationProvider)
+                        .accessTokenResponseHandler(new SendResultAccessTokenResponse()));
 
         httpSecurity.securityMatcher(endpointsMatcher)
                 .exceptionHandling()

@@ -54,7 +54,7 @@ public class AuthController {
     @ApiOperation(value = "获取验证码", notes = "获取验证码")
     public Result<Map<String, Object>> captcha() {
         // TODO: 2023/7/7 验证码可配置化
-        GifCaptcha captcha = CaptchaUtil.createGifCaptcha(200, 100, 4);
+        GifCaptcha captcha = CaptchaUtil.createGifCaptcha(200, 30, 4);
         String code = captcha.getCode();
         String key = IdUtil.fastSimpleUUID();
         redisTemplate.opsForValue().set(Keys.CAPTCHA_KEY + key, code, Duration.ofMinutes(5));

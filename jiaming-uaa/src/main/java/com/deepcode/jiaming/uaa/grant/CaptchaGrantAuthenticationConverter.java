@@ -49,6 +49,15 @@ public class CaptchaGrantAuthenticationConverter implements AuthenticationConver
                     null);
         }
 
+        Object captchaCache = redisTemplate.opsForValue().get(Keys.CAPTCHA_KEY + key);
+        if (Objects.isNull(captchaCache)) {
+            SecurityUtil.throwError(
+                    "invalid_captcha",
+                    "验证码已过期",
+                    null
+            );
+        }
+
         // 删除验证码缓存
         redisTemplate.delete(Keys.CAPTCHA_KEY + key);
 
