@@ -11,7 +11,7 @@ import com.deepcode.jiaming.uaa.entity.SecurityUser;
 import com.deepcode.jiaming.uaa.grant.CaptchaAuthenticationProvider;
 import com.deepcode.jiaming.uaa.grant.CaptchaGrantAuthenticationConverter;
 import com.deepcode.jiaming.uaa.handler.RevocationSuccessHandler;
-import com.deepcode.jiaming.uaa.handler.token.SendResultAccessTokenResponse;
+import com.deepcode.jiaming.uaa.handler.token.SendResultAccessTokenResponseHandler;
 import com.deepcode.jiaming.uaa.properties.OAuth2Properties;
 import com.deepcode.jiaming.uaa.repository.JmtkJdbcOAuth2AuthorizationService;
 import com.fasterxml.jackson.databind.Module;
@@ -105,7 +105,7 @@ public class AuthorizationServerConfig {
                 .tokenEndpoint(tokenEndpoint -> tokenEndpoint
                         .accessTokenRequestConverter(authenticationConverter)
                         .authenticationProvider(authenticationProvider)
-                        .accessTokenResponseHandler(new SendResultAccessTokenResponse()));
+                        .accessTokenResponseHandler(new SendResultAccessTokenResponseHandler()));
 
         httpSecurity.securityMatcher(endpointsMatcher)
                 .exceptionHandling()

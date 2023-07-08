@@ -37,4 +37,7 @@ public class UserVo implements Serializable {
 
     @ApiModelProperty("账号状态 0:停用 1:正常")
     private Integer status;
+
+    @ApiModelProperty("是否是管理员（0:不是 1:是）")
+    private Integer isAdmin;
 }

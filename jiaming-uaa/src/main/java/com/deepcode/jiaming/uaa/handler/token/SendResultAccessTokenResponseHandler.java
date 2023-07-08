@@ -5,9 +5,11 @@ import com.deepcode.jiaming.utils.ResponseUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.OAuth2AccessToken;
 import org.springframework.security.oauth2.core.OAuth2RefreshToken;
+import org.springframework.security.oauth2.core.endpoint.DefaultOAuth2AccessTokenResponseMapConverter;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AccessTokenResponse;
 import org.springframework.security.oauth2.server.authorization.authentication.OAuth2AccessTokenAuthenticationToken;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
@@ -24,7 +26,10 @@ import java.util.Map;
  * @date 2023/7/8 12:46
  * @see org.springframework.security.oauth2.server.authorization.web.OAuth2TokenEndpointFilter
  */
-public class SendResultAccessTokenResponse implements AuthenticationSuccessHandler {
+public class SendResultAccessTokenResponseHandler implements AuthenticationSuccessHandler {
+    private final Converter<OAuth2AccessTokenResponse, Map<String, Object>> responseMapConverter =
+            new DefaultOAuth2AccessTokenResponseMapConverter();
+
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
         OAuth2AccessTokenAuthenticationToken accessTokenAuthentication =
@@ -48,8 +53,9 @@ public class SendResultAccessTokenResponse implements AuthenticationSuccessHandl
             builder.additionalParameters(additionalParameters);
         }
         OAuth2AccessTokenResponse accessTokenResponse = builder.build();
+        Map<String, Object> tokenResponseParameters = responseMapConverter.convert(accessTokenResponse);
 
         // 对默认的输出结果包装一层系统的响应体
-        ResponseUtil.out(response, Result.ok(accessTokenResponse));
+        ResponseUtil.out(response, Result.ok(tokenResponseParameters));
     }
 }
