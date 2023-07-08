@@ -2,6 +2,7 @@ package com.deepcode.jiaming.uaa.grant;
 
 import cn.hutool.core.text.CharSequenceUtil;
 import com.deepcode.jiaming.uaa.constants.Keys;
+import com.deepcode.jiaming.uaa.constants.OAuth2GrantTypes;
 import com.deepcode.jiaming.uaa.utils.SecurityUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -16,6 +17,8 @@ import org.springframework.util.StringUtils;
 import java.util.*;
 
 /**
+ * 验证码登录转换器，参考：https://juejin.cn/post/7246409673565372475
+ *
  * @author winmanboo
  * @date 2023/7/6 18:21
  */
@@ -31,7 +34,7 @@ public class CaptchaGrantAuthenticationConverter implements AuthenticationConver
     @Override
     public Authentication convert(HttpServletRequest request) {
         String grantType = request.getParameter(OAuth2ParameterNames.GRANT_TYPE);
-        if (!"captcha".equals(grantType)) {
+        if (!OAuth2GrantTypes.CAPTCHA.getValue().equals(grantType)) {
             return null;
         }
         Authentication clientPrincipal = SecurityContextHolder.getContext().getAuthentication();

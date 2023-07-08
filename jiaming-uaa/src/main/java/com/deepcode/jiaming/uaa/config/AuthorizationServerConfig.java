@@ -59,7 +59,6 @@ import org.springframework.security.web.util.matcher.RequestMatcher;
 
 import java.time.Duration;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * @author winmanboo
@@ -226,16 +225,15 @@ public class AuthorizationServerConfig {
 
             Object principal = authentication.getPrincipal();
 
-            if (principal instanceof String) {
+            if (principal instanceof String clientId) {
                 // 客户端模式 principal 为 clientId
-                String clientId = (String) principal;
-            } else if (principal instanceof SecurityUser) {
+            } else if (principal instanceof SecurityUser securityUser) {
                 // 授权码模式 principal 为 SecurityUser
-                SecurityUser securityUser = (SecurityUser) principal;
                 // 添加权限信息
                 List<String> authorities = securityUser.getAuthorities().stream()
                         .map(GrantedAuthority::getAuthority)
-                        .collect(Collectors.toList());
+                        .toList();
+
                 context.getClaims().claim(AuthConstant.AUTHORITY_CLAIM_NAME, authorities)
                         .claim(AuthConstant.IS_ADMIN_CLAIM_NAME, securityUser.getIsAdmin() == 1)
                         .claim(AuthConstant.TENANT_CLAIM_NAME, securityUser.getTenantId())
@@ -267,7 +265,7 @@ public class AuthorizationServerConfig {
                 .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN) // 刷新 token 模式
                 .authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS) // 客户端模式
                 .authorizationGrantType(AuthorizationGrantType.JWT_BEARER) // 这种模式其实就是简化模式
-                .authorizationGrantType(OAuth2GrantTypes.CAPTCHA)
+                .authorizationGrantType(OAuth2GrantTypes.CAPTCHA) // 验证码模式
                 .clientSecret(passwordEncoder.encode(OAuth2Constant.DEFAULT_CLIENT_SECRET))
                 .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
                 .clientSettings(ClientSettings.builder().requireAuthorizationConsent(true).build())

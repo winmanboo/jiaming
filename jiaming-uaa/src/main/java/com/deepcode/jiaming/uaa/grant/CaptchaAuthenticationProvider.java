@@ -30,6 +30,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
+ * 验证码登录认证提供者
+ *
  * @author winmanboo
  * @date 2023/7/6 20:48
  */
@@ -97,7 +99,7 @@ public class CaptchaAuthenticationProvider implements AuthenticationProvider {
                 generatedAccessToken.getExpiresAt(), tokenContext.getAuthorizedScopes());
         if (generatedAccessToken instanceof ClaimAccessor claimAccessor) {
             authorizationBuilder.token(accessToken, metadata ->
-                    metadata.put(OAuth2Authorization.Token.CLAIMS_METADATA_NAME, ((ClaimAccessor) generatedAccessToken).getClaims()));
+                    metadata.put(OAuth2Authorization.Token.CLAIMS_METADATA_NAME, claimAccessor.getClaims()));
         } else {
             authorizationBuilder.accessToken(accessToken);
         }

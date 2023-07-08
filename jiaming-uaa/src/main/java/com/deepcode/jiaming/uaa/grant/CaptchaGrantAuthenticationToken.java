@@ -8,6 +8,8 @@ import java.util.Map;
 import java.util.Set;
 
 /**
+ * 自定义验证码登录Token类
+ *
  * @author winmanboo
  * @date 2023/7/6 20:35
  */
