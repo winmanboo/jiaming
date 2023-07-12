@@ -17,7 +17,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -74,7 +73,7 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
 
             route.setMeta(meta);
             return route;
-        }).collect(Collectors.toList());
+        }).toList();
 
         return RouteHelper.generateRouteTree(routes);
     }

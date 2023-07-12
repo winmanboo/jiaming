@@ -6,7 +6,6 @@ import lombok.experimental.UtilityClass;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 /**
  * 菜单路由辅助类
@@ -47,7 +46,7 @@ public class RouteHelper {
                 return true;
             }
             return false;
-        }).collect(Collectors.toList());
+        }).toList();
         route.setChildren(children);
         return route;
     }

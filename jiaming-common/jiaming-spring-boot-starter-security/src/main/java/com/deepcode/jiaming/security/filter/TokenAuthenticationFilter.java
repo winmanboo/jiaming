@@ -54,11 +54,14 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
             }
         }
 
-        ResponseUtil.out(response, UserResultStatus.A0306);
+        ResponseUtil.out(response, Result.fail(UserResultStatus.A0306));
     }
 
     private String getToken(HttpServletRequest request) {
         String token = request.getHeader(OAuth2Constant.AUTHORIZATION_HEADER);
+        if (CharSequenceUtil.isEmpty(token))  {
+            return null;
+        }
         String[] tokenSplit = token.split(" ");
         if (tokenSplit.length != 2) {
             log.info("token format error : " + token);

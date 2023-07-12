@@ -2,6 +2,9 @@ package com.deepcode.jiaming.admin.service;
 
 import com.deepcode.jiaming.admin.entity.Dept;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.deepcode.jiaming.admin.vo.DeptVo;
+
+import java.util.List;
 
 /**
  * <p>
@@ -13,4 +16,10 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface DeptService extends IService<Dept> {
 
+    /**
+     * 部门列表
+     *
+     * @return {@link List}<{@link DeptVo}>
+     */
+    List<DeptVo> listDeptVo();
 }

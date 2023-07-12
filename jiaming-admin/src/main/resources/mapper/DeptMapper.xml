@@ -2,4 +2,10 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.deepcode.jiaming.admin.mapper.DeptMapper">
 
+    <select id="listDeptVo" resultType="com.deepcode.jiaming.admin.vo.DeptVo">
+        select id, name, parent_id, leader_user_id, phone, email
+        from sys_dept
+        where tenant_id = #{tenantId}
+          and status = 1
+    </select>
 </mapper>
