@@ -2,4 +2,22 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.deepcode.jiaming.admin.mapper.UserMapper">
 
+    <select id="pageList" resultType="com.deepcode.jiaming.admin.vo.UserVo">
+        select su.id,
+               su.username,
+               su.nickname,
+               su.dept_id,
+               su.post_ids,
+               su.email,
+               su.mobile,
+               su.sex,
+               su.avatar,
+               su.status,
+               su.is_admin,
+               su.create_time,
+               sd.name as deptName
+        from sys_user su
+                 left join sys_dept sd on su.dept_id = sd.id
+        where su.tenant_id = #{tenantId}
+    </select>
 </mapper>

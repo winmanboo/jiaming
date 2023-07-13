@@ -2,12 +2,16 @@ package com.deepcode.jiaming.admin.controller.admin;
 
 import com.deepcode.jiaming.admin.service.UserService;
 import com.deepcode.jiaming.admin.vo.UserVo;
+import com.deepcode.jiaming.base.PageList;
+import com.deepcode.jiaming.base.PageParam;
 import com.deepcode.jiaming.result.Result;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import javax.validation.Valid;
 
 /**
  * <p>
@@ -30,5 +34,12 @@ public class UserController {
     public Result<UserVo> userInfo() {
         UserVo userVo = userService.getCurrentUserInfo();
         return Result.ok(userVo);
+    }
+
+    @GetMapping("/page")
+    @ApiOperation(value = "用户列表", notes = "用户列表")
+    public Result<PageList<UserVo>> page(@Valid PageParam pageParam) {
+        PageList<UserVo> pageList = userService.pageList(pageParam);
+        return Result.ok(pageList);
     }
 }

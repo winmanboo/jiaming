@@ -1,16 +1,20 @@
 package com.deepcode.jiaming.admin.vo;
 
+import com.deepcode.jiaming.base.BaseEntity;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
-
-import java.io.Serializable;
+import lombok.EqualsAndHashCode;
 
 /**
  * @author winmanboo
  * @date 2023/7/5 13:34
  */
 @Data
-public class UserVo implements Serializable {
+@EqualsAndHashCode(callSuper = true)
+public class UserVo extends BaseEntity {
+    @ApiModelProperty("用户编号")
+    private Long id;
+
     @ApiModelProperty("用户名")
     private String username;
 
@@ -38,6 +42,6 @@ public class UserVo implements Serializable {
     @ApiModelProperty("账号状态 0:停用 1:正常")
     private Integer status;
 
-    @ApiModelProperty("是否是管理员（0:不是 1:是）")
-    private Integer isAdmin;
+    @ApiModelProperty("所属部门名")
+    private String deptName;
 }
