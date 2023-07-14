@@ -2,6 +2,9 @@ package com.deepcode.jiaming.admin.service;
 
 import com.deepcode.jiaming.admin.entity.Post;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.deepcode.jiaming.admin.vo.PostVo;
+
+import java.util.List;
 
 /**
  * <p>
@@ -13,4 +16,10 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface PostService extends IService<Post> {
 
+    /**
+     * 岗位列表
+     *
+     * @return {@link List}<{@link PostVo}>
+     */
+    List<PostVo> listVo();
 }

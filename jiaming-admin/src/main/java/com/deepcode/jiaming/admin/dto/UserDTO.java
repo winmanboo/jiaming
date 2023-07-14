@@ -9,7 +9,6 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 import javax.validation.constraints.NotNull;
-import java.util.List;
 
 /**
  * @author winmanboo
@@ -48,7 +47,7 @@ public class UserDTO {
     private Integer sex;
 
     @ApiModelProperty("岗位 id 列表")
-    private List<Long> postIds;
+    private String postIds;
 
     @ApiModelProperty("状态")
     @NotNull(message = "用户状态不能为空", groups = StatusGroup.class)
