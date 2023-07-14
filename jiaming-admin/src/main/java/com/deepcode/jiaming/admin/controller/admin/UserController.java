@@ -6,6 +6,7 @@ import com.deepcode.jiaming.admin.vo.UserVo;
 import com.deepcode.jiaming.base.PageList;
 import com.deepcode.jiaming.base.PageParam;
 import com.deepcode.jiaming.result.Result;
+import com.deepcode.jiaming.security.context.UserInfoContext;
 import com.deepcode.jiaming.valid.AddGroup;
 import com.deepcode.jiaming.valid.StatusGroup;
 import com.deepcode.jiaming.valid.UpdateGroup;
@@ -35,7 +36,14 @@ public class UserController {
     @GetMapping("/info")
     @ApiOperation(value = "用户信息", notes = "获取当前登录的用户信息")
     public Result<UserVo> userInfo() {
-        UserVo userVo = userService.getCurrentUserInfo();
+        UserVo userVo = userService.getUserInfo(UserInfoContext.get().getUserId());
+        return Result.ok(userVo);
+    }
+
+    @GetMapping("/userinfo/{userId}")
+    @ApiOperation(value = "获取用户信息", notes = "根据用户 id 获取用户信息")
+    public Result<UserVo> userInfoByUserId(@PathVariable("userId") Long userId) {
+        UserVo userVo = userService.getUserInfo(userId);
         return Result.ok(userVo);
     }
 

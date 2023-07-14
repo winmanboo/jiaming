@@ -10,6 +10,7 @@ import com.deepcode.jiaming.admin.service.UserService;
 import com.deepcode.jiaming.admin.vo.UserVo;
 import com.deepcode.jiaming.base.PageList;
 import com.deepcode.jiaming.base.PageParam;
+import com.deepcode.jiaming.exception.JiamingException;
 import com.deepcode.jiaming.security.context.UserInfoContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -33,13 +34,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     private final UserMapping userMapping;
 
     private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-
-    @Override
-    public UserVo getCurrentUserInfo() {
-        Long userId = UserInfoContext.get().getUserId();
-        User user = lambdaQuery().eq(Objects.nonNull(userId), User::getId, userId).one();
-        return userMapping.toUserVo(user);
-    }
 
     @Override
     public PageList<UserVo> pageList(PageParam pageParam, UserDTO userDTO) {
@@ -69,5 +63,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         return lambdaUpdate().eq(User::getId, userDTO.getId())
                 .set(User::getUpdater, UserInfoContext.get().getUsername())
                 .update(user);
+    }
+
+    @Override
+    public UserVo getUserInfo(Long userId) {
+        if (Objects.isNull(userId)) {
+            throw new JiamingException("用户 id 不能为空");
+        }
+        return baseMapper.getUserInfo(userId);
     }
 }

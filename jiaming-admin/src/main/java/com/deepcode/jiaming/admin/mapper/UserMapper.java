@@ -27,4 +27,12 @@ public interface UserMapper extends BaseMapper<User> {
      * @return {@link List}<{@link UserVo}>
      */
     IPage<UserVo> pageList(@Param("page") IPage<UserVo> page, @Param("tenantId") Long tenantId, @Param("user") UserDTO user);
+
+    /**
+     * 获取用户信息
+     *
+     * @param userId 用户id
+     * @return {@link UserVo}
+     */
+    UserVo getUserInfo(@Param("userId") Long userId);
 }

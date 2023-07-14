@@ -2,8 +2,8 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.deepcode.jiaming.admin.mapper.UserMapper">
 
-    <select id="pageList" resultType="com.deepcode.jiaming.admin.vo.UserVo">
-        select su.id,
+    <sql id="Vo_Column">
+        su.id,
         su.username,
         su.nickname,
         su.dept_id,
@@ -13,9 +13,13 @@
         su.sex,
         su.avatar,
         su.status,
-        su.is_admin,
         su.create_time,
         sd.name as deptName
+    </sql>
+
+    <select id="pageList" resultType="com.deepcode.jiaming.admin.vo.UserVo">
+        select
+        <include refid="Vo_Column"/>
         from sys_user su
         left join sys_dept sd on su.dept_id = sd.id
         where su.tenant_id = #{tenantId}
@@ -34,5 +38,12 @@
         <if test="user.endTime != null and user.endTime != ''">
             and su.create_time &lt;= #{user.endTime}
         </if>
+    </select>
+    <select id="getUserInfo" resultType="com.deepcode.jiaming.admin.vo.UserVo">
+        select
+        <include refid="Vo_Column"/>
+        from sys_user su
+        left join sys_dept sd on sd.id = su.dept_id
+        where su.id = #{userId}
     </select>
 </mapper>

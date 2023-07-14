@@ -18,13 +18,6 @@ import com.deepcode.jiaming.base.PageParam;
 public interface UserService extends IService<User> {
 
     /**
-     * 得到当前登录用户的信息
-     *
-     * @return {@link UserVo}
-     */
-    UserVo getCurrentUserInfo();
-
-    /**
      * 页面列表
      *
      * @param pageParam 页面参数
@@ -55,4 +48,12 @@ public interface UserService extends IService<User> {
      * @return boolean
      */
     boolean updateUser(UserDTO userDTO);
+
+    /**
+     * 获取用户信息
+     *
+     * @param userId 用户id
+     * @return {@link UserVo}
+     */
+    UserVo getUserInfo(Long userId);
 }
