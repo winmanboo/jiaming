@@ -82,6 +82,7 @@ public class User extends BaseEntity {
     @ApiModelProperty("租户id，如果为0则为平台用户")
     private Long tenantId;
 
+    // FIXME: 2023/7/14 删除字段，应该根据角色来判断是否是管理员
     @ApiModelProperty("是否是管理员（0:不是 1:是）")
     private Integer isAdmin;
 }

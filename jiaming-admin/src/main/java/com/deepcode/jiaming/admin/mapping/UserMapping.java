@@ -1,5 +1,6 @@
 package com.deepcode.jiaming.admin.mapping;
 
+import com.deepcode.jiaming.admin.dto.UserDTO;
 import com.deepcode.jiaming.admin.entity.User;
 import com.deepcode.jiaming.admin.vo.UserVo;
 import org.mapstruct.Mapper;
@@ -13,4 +14,6 @@ import org.mapstruct.MappingConstants;
 public interface UserMapping {
 
     UserVo toUserVo(User user);
+
+    User toUser(UserDTO userDTO);
 }

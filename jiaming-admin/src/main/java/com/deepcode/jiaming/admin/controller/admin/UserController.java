@@ -6,6 +6,7 @@ import com.deepcode.jiaming.admin.vo.UserVo;
 import com.deepcode.jiaming.base.PageList;
 import com.deepcode.jiaming.base.PageParam;
 import com.deepcode.jiaming.result.Result;
+import com.deepcode.jiaming.valid.AddGroup;
 import com.deepcode.jiaming.valid.StatusGroup;
 import com.deepcode.jiaming.valid.UpdateGroup;
 import io.swagger.annotations.ApiOperation;
@@ -50,5 +51,17 @@ public class UserController {
     public Result<Void> status(@Validated(value = {UpdateGroup.class, StatusGroup.class}) @RequestBody UserDTO userDTO) {
         userService.changeUserStatus(userDTO.getId(), userDTO.getStatus());
         return Result.ok();
+    }
+
+    @PutMapping("/update")
+    @ApiOperation(value = "更新用户信息", notes = "更新用户信息")
+    public Result<Void> update(@Validated(value = UpdateGroup.class) @RequestBody UserDTO userDTO) {
+        return Result.valid(userService.updateUser(userDTO));
+    }
+
+    @PostMapping("/add")
+    @ApiOperation(value = "新增用户", notes = "新增用户")
+    public Result<Void> add(@Validated(value = AddGroup.class) @RequestBody UserDTO userDTO) {
+        return Result.valid(userService.addUser(userDTO));
     }
 }

@@ -12,6 +12,8 @@ import com.deepcode.jiaming.base.PageList;
 import com.deepcode.jiaming.base.PageParam;
 import com.deepcode.jiaming.security.context.UserInfoContext;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Objects;
@@ -27,7 +29,10 @@ import java.util.Objects;
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
+
     private final UserMapping userMapping;
+
+    private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     @Override
     public UserVo getCurrentUserInfo() {
@@ -46,5 +51,23 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Override
     public void changeUserStatus(Long id, Integer status) {
         lambdaUpdate().eq(User::getId, id).set(User::getStatus, status).update();
+    }
+
+    @Override
+    public boolean addUser(UserDTO userDTO) {
+        User user = userMapping.toUser(userDTO);
+        user.setPassword(passwordEncoder.encode(userDTO.getPassword()));
+        user.setCreator(UserInfoContext.get().getUsername());
+        user.setTenantId(UserInfoContext.get().getTenantId());
+
+        return this.save(user);
+    }
+
+    @Override
+    public boolean updateUser(UserDTO userDTO) {
+        User user = userMapping.toUser(userDTO);
+        return lambdaUpdate().eq(User::getId, userDTO.getId())
+                .set(User::getUpdater, UserInfoContext.get().getUsername())
+                .update(user);
     }
 }

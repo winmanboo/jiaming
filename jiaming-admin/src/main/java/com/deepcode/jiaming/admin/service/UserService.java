@@ -40,4 +40,19 @@ public interface UserService extends IService<User> {
      * @param status 状态
      */
     void changeUserStatus(Long id, Integer status);
+
+    /**
+     * 添加用户
+     *
+     * @param userDTO 用户dto
+     */
+    boolean addUser(UserDTO userDTO);
+
+    /**
+     * 更新用户
+     *
+     * @param userDTO 用户dto
+     * @return boolean
+     */
+    boolean updateUser(UserDTO userDTO);
 }
