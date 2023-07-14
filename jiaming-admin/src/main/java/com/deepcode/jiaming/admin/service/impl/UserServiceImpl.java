@@ -42,4 +42,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         IPage<UserVo> page = baseMapper.pageList(pageParam.toPage(), tenantId, userDTO);
         return PageList.turnTo(page);
     }
+
+    @Override
+    public void changeUserStatus(Long id, Integer status) {
+        lambdaUpdate().eq(User::getId, id).set(User::getStatus, status).update();
+    }
 }

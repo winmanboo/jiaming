@@ -6,11 +6,12 @@ import com.deepcode.jiaming.admin.vo.UserVo;
 import com.deepcode.jiaming.base.PageList;
 import com.deepcode.jiaming.base.PageParam;
 import com.deepcode.jiaming.result.Result;
+import com.deepcode.jiaming.valid.StatusGroup;
+import com.deepcode.jiaming.valid.UpdateGroup;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 
@@ -42,5 +43,12 @@ public class UserController {
     public Result<PageList<UserVo>> page(@Valid PageParam pageParam, UserDTO userDTO) {
         PageList<UserVo> pageList = userService.pageList(pageParam, userDTO);
         return Result.ok(pageList);
+    }
+
+    @PostMapping("/status")
+    @ApiOperation(value = "改变用户状态", notes = "改变用户状态")
+    public Result<Void> status(@Validated(value = {UpdateGroup.class, StatusGroup.class}) @RequestBody UserDTO userDTO) {
+        userService.changeUserStatus(userDTO.getId(), userDTO.getStatus());
+        return Result.ok();
     }
 }

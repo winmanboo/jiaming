@@ -32,4 +32,12 @@ public interface UserService extends IService<User> {
      * @return {@link PageList}<{@link UserVo}>
      */
     PageList<UserVo> pageList(PageParam pageParam, UserDTO userDTO);
+
+    /**
+     * 改变用户状态
+     *
+     * @param id     id
+     * @param status 状态
+     */
+    void changeUserStatus(Long id, Integer status);
 }
