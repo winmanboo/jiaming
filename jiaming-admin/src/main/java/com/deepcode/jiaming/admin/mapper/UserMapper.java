@@ -1,6 +1,7 @@
 package com.deepcode.jiaming.admin.mapper;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.deepcode.jiaming.admin.dto.UserDTO;
 import com.deepcode.jiaming.admin.entity.User;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.deepcode.jiaming.admin.vo.UserVo;
@@ -22,7 +23,8 @@ public interface UserMapper extends BaseMapper<User> {
      * 用户列表
      *
      * @param tenantId 租户 id
+     * @param user     用户信息
      * @return {@link List}<{@link UserVo}>
      */
-    IPage<UserVo> pageList(@Param("page") IPage<UserVo> page, @Param("tenantId") Long tenantId);
+    IPage<UserVo> pageList(@Param("page") IPage<UserVo> page, @Param("tenantId") Long tenantId, @Param("user") UserDTO user);
 }

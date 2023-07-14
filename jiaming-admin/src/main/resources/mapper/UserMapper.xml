@@ -4,20 +4,35 @@
 
     <select id="pageList" resultType="com.deepcode.jiaming.admin.vo.UserVo">
         select su.id,
-               su.username,
-               su.nickname,
-               su.dept_id,
-               su.post_ids,
-               su.email,
-               su.mobile,
-               su.sex,
-               su.avatar,
-               su.status,
-               su.is_admin,
-               su.create_time,
-               sd.name as deptName
+        su.username,
+        su.nickname,
+        su.dept_id,
+        su.post_ids,
+        su.email,
+        su.mobile,
+        su.sex,
+        su.avatar,
+        su.status,
+        su.is_admin,
+        su.create_time,
+        sd.name as deptName
         from sys_user su
-                 left join sys_dept sd on su.dept_id = sd.id
+        left join sys_dept sd on su.dept_id = sd.id
         where su.tenant_id = #{tenantId}
+        <if test="user.username != null and user.mobile != ''">
+            and su.username = #{user.username}
+        </if>
+        <if test="user.mobile != null and user.mobile != ''">
+            and su.mobile = #{user.mobile}
+        </if>
+        <if test="user.status != null">
+            and su.status = #{user.status}
+        </if>
+        <if test="user.startTime != null and user.startTime != ''">
+            and su.create_time &gt;= #{user.startTime}
+        </if>
+        <if test="user.endTime != null and user.endTime != ''">
+            and su.create_time &lt;= #{user.endTime}
+        </if>
     </select>
 </mapper>

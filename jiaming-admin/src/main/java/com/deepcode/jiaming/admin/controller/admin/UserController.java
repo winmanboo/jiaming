@@ -1,5 +1,6 @@
 package com.deepcode.jiaming.admin.controller.admin;
 
+import com.deepcode.jiaming.admin.dto.UserDTO;
 import com.deepcode.jiaming.admin.service.UserService;
 import com.deepcode.jiaming.admin.vo.UserVo;
 import com.deepcode.jiaming.base.PageList;
@@ -38,8 +39,8 @@ public class UserController {
 
     @GetMapping("/page")
     @ApiOperation(value = "用户列表", notes = "用户列表")
-    public Result<PageList<UserVo>> page(@Valid PageParam pageParam) {
-        PageList<UserVo> pageList = userService.pageList(pageParam);
+    public Result<PageList<UserVo>> page(@Valid PageParam pageParam, UserDTO userDTO) {
+        PageList<UserVo> pageList = userService.pageList(pageParam, userDTO);
         return Result.ok(pageList);
     }
 }

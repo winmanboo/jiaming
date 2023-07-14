@@ -2,6 +2,7 @@ package com.deepcode.jiaming.admin.service.impl;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.deepcode.jiaming.admin.dto.UserDTO;
 import com.deepcode.jiaming.admin.entity.User;
 import com.deepcode.jiaming.admin.mapper.UserMapper;
 import com.deepcode.jiaming.admin.mapping.UserMapping;
@@ -36,9 +37,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     @Override
-    public PageList<UserVo> pageList(PageParam pageParam) {
+    public PageList<UserVo> pageList(PageParam pageParam, UserDTO userDTO) {
         Long tenantId = UserInfoContext.get().getTenantId();
-        IPage<UserVo> page = baseMapper.pageList(pageParam.toPage(), tenantId);
+        IPage<UserVo> page = baseMapper.pageList(pageParam.toPage(), tenantId, userDTO);
         return PageList.turnTo(page);
     }
 }

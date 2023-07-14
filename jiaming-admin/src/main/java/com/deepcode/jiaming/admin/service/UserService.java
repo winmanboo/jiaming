@@ -1,12 +1,11 @@
 package com.deepcode.jiaming.admin.service;
 
-import com.deepcode.jiaming.admin.entity.User;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.deepcode.jiaming.admin.dto.UserDTO;
+import com.deepcode.jiaming.admin.entity.User;
 import com.deepcode.jiaming.admin.vo.UserVo;
 import com.deepcode.jiaming.base.PageList;
 import com.deepcode.jiaming.base.PageParam;
-
-import java.util.List;
 
 /**
  * <p>
@@ -26,9 +25,11 @@ public interface UserService extends IService<User> {
     UserVo getCurrentUserInfo();
 
     /**
-     * 用户列表
+     * 页面列表
      *
-     * @return {@link List}<{@link UserVo}>
+     * @param pageParam 页面参数
+     * @param userDTO   用户dto
+     * @return {@link PageList}<{@link UserVo}>
      */
-    PageList<UserVo> pageList(PageParam pageParam);
+    PageList<UserVo> pageList(PageParam pageParam, UserDTO userDTO);
 }
