@@ -23,6 +23,9 @@
         from sys_user su
         left join sys_dept sd on su.dept_id = sd.id
         where su.tenant_id = #{tenantId}
+        <if test="user.deptId != null">
+            and su.dept_id = #{user.deptId}
+        </if>
         <if test="user.username != null and user.mobile != ''">
             and su.username = #{user.username}
         </if>
