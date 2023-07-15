@@ -1,17 +1,17 @@
 package com.deepcode.jiaming.admin.service.impl;
 
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.deepcode.jiaming.admin.dto.UserRoleDTO;
 import com.deepcode.jiaming.admin.entity.UserRole;
 import com.deepcode.jiaming.admin.mapper.UserRoleMapper;
 import com.deepcode.jiaming.admin.service.UserRoleService;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.deepcode.jiaming.security.context.UserInfoContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.aop.framework.AopContext;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -26,7 +26,10 @@ import java.util.stream.Collectors;
 public class UserRoleServiceImpl extends ServiceImpl<UserRoleMapper, UserRole> implements UserRoleService {
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void assign(UserRoleDTO userRoleDTO) {
+        lambdaUpdate().eq(UserRole::getUserId, userRoleDTO.getUserId()).remove();
+
         Long tenantId = UserInfoContext.get().getTenantId();
         String creator = UserInfoContext.get().getUsername();
         List<UserRole> userRoleList = userRoleDTO.getRoleIds().stream().map(roleId -> {
@@ -36,7 +39,7 @@ public class UserRoleServiceImpl extends ServiceImpl<UserRoleMapper, UserRole> i
             userRole.setTenantId(tenantId);
             userRole.setCreator(creator);
             return userRole;
-        }).collect(Collectors.toList());
+        }).toList();
 
         ((UserRoleServiceImpl) AopContext.currentProxy()).saveBatch(userRoleList);
     }

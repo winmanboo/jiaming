@@ -2,6 +2,24 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.deepcode.jiaming.admin.mapper.UserMapper">
 
+    <resultMap id="userVoMap" type="com.deepcode.jiaming.admin.vo.UserVo">
+        <id property="id" column="id"/>
+        <result property="username" column="username"/>
+        <result property="nickname" column="nickname"/>
+        <result property="deptId" column="dept_id"/>
+        <result property="postIds" column="post_ids"/>
+        <result property="email" column="email"/>
+        <result property="mobile" column="mobile"/>
+        <result property="sex" column="sex"/>
+        <result property="avatar" column="avatar"/>
+        <result property="status" column="status"/>
+        <result property="createTime" column="create_time"/>
+        <result property="deptName" column="name"/>
+        <collection property="roleIds" ofType="long">
+            <id property="id" column="role_id"/>
+        </collection>
+    </resultMap>
+
     <sql id="Vo_Column">
         su.id,
         su.username,
@@ -42,11 +60,12 @@
             and su.create_time &lt;= #{user.endTime}
         </if>
     </select>
-    <select id="getUserInfo" resultType="com.deepcode.jiaming.admin.vo.UserVo">
-        select
-        <include refid="Vo_Column"/>
+    <select id="getUserInfo" resultMap="userVoMap">
+        select distinct
+        <include refid="Vo_Column"/>, sur.role_id
         from sys_user su
         left join sys_dept sd on sd.id = su.dept_id
+        left join sys_user_role sur on su.id = sur.user_id
         where su.id = #{userId}
     </select>
 </mapper>

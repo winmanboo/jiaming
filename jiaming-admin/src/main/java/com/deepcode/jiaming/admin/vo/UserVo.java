@@ -5,6 +5,8 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+import java.util.List;
+
 /**
  * @author winmanboo
  * @date 2023/7/5 13:34
@@ -44,4 +46,7 @@ public class UserVo extends BaseEntity {
 
     @ApiModelProperty("所属部门名")
     private String deptName;
+
+    @ApiModelProperty("用户关联的角色id列表")
+    private List<Long> roleIds;
 }
