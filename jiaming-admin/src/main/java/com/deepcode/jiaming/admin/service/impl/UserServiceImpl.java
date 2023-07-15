@@ -49,6 +49,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public boolean addUser(UserDTO userDTO) {
+        User dbUser = lambdaQuery().eq(User::getUsername, userDTO.getUsername()).one();
+        if (Objects.nonNull(dbUser)) {
+            throw new JiamingException("用户名已存在");
+        }
+
         User user = userMapping.toUser(userDTO);
         user.setPassword(passwordEncoder.encode(userDTO.getPassword()));
         user.setCreator(UserInfoContext.get().getUsername());
@@ -71,5 +76,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             throw new JiamingException("用户 id 不能为空");
         }
         return baseMapper.getUserInfo(userId);
+    }
+
+    @Override
+    public boolean resetPassword(Long userId, String password) {
+        User user = this.getById(userId);
+        if (Objects.isNull(user)) {
+            throw new JiamingException("用户不存在");
+        }
+        return lambdaUpdate().eq(User::getId, userId).set(User::getPassword, passwordEncoder.encode(password)).update();
     }
 }

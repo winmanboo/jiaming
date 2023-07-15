@@ -22,7 +22,7 @@
         <include refid="Vo_Column"/>
         from sys_user su
         left join sys_dept sd on su.dept_id = sd.id
-        where su.tenant_id = #{tenantId}
+        where su.tenant_id = #{tenantId} and su.deleted = 0
         <if test="user.deptId != null">
             and su.dept_id = #{user.deptId}
         </if>

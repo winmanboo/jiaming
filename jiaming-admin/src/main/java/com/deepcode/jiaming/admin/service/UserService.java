@@ -56,4 +56,13 @@ public interface UserService extends IService<User> {
      * @return {@link UserVo}
      */
     UserVo getUserInfo(Long userId);
+
+    /**
+     * 重置密码
+     *
+     * @param userId   用户id
+     * @param password 密码
+     * @return boolean
+     */
+    boolean resetPassword(Long userId, String password);
 }
