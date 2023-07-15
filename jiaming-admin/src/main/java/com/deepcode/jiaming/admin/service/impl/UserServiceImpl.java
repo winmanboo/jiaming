@@ -37,8 +37,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public PageList<UserVo> pageList(PageParam pageParam, UserDTO userDTO) {
-        Long tenantId = UserInfoContext.get().getTenantId();
-        IPage<UserVo> page = baseMapper.pageList(pageParam.toPage(), tenantId, userDTO);
+        IPage<UserVo> page = baseMapper.pageList(pageParam.toPage(), userDTO);
         return PageList.turnTo(page);
     }
 

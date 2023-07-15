@@ -14,6 +14,15 @@ spring:
       host: 121.5.183.150
       port: 6380
 
+tenant:
+  ignore-tables:
+    - oauth2_authorization
+    - oauth2_authorization_consent
+    - oauth2_registered_client
+    - sys_menu
+    - sys_tenant
+    - sys_tenant_package
+
 mybatis-plus:
   global-config:
     db-config:

@@ -2,4 +2,24 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.deepcode.jiaming.admin.mapper.RoleMapper">
 
+    <select id="pageList" resultType="com.deepcode.jiaming.admin.vo.RoleVo">
+        select id, name, code, status, create_time, remark
+        from sys_role
+        where 1 = 1
+        <if test="role.name != null and role.name != ''">
+            and name = #{role.name}
+        </if>
+        <if test="role.code != null and role.code != ''">
+            and code = #{role.code}
+        </if>
+        <if test="role.status != null">
+            and status = #{role.status}
+        </if>
+        <if test="role.startTime != null and role.startTime != ''">
+            and create_time &gt;= #{role.startTime}
+        </if>
+        <if test="role.endTime != null and role.endTime != ''">
+            and create_time &lt;= #{role.endTime}
+        </if>
+    </select>
 </mapper>
