@@ -5,7 +5,7 @@
     <select id="pageList" resultType="com.deepcode.jiaming.admin.vo.RoleVo">
         select id, name, code, status, create_time, remark
         from sys_role
-        where 1 = 1
+        where deleted = 0
         <if test="role.name != null and role.name != ''">
             and name = #{role.name}
         </if>
