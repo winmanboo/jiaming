@@ -30,6 +30,9 @@ public class RoleDTO {
     @NotEmpty(message = "角色状态不能为空", groups = AddGroup.class)
     private Integer status;
 
+    @ApiModelProperty("备注")
+    private String remark;
+
     @ApiModelProperty("开始时间")
     private String startTime;
 
