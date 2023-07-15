@@ -1,9 +1,11 @@
 package com.deepcode.jiaming.admin.controller.admin;
 
 import com.deepcode.jiaming.admin.dto.RoleDTO;
+import com.deepcode.jiaming.admin.dto.UserRoleDTO;
 import com.deepcode.jiaming.admin.entity.Role;
 import com.deepcode.jiaming.admin.mapping.RoleMapping;
 import com.deepcode.jiaming.admin.service.RoleService;
+import com.deepcode.jiaming.admin.service.UserRoleService;
 import com.deepcode.jiaming.admin.vo.RoleVo;
 import com.deepcode.jiaming.base.PageList;
 import com.deepcode.jiaming.base.PageParam;
@@ -31,6 +33,8 @@ import java.util.Objects;
 public class RoleController {
 
     private final RoleService roleService;
+
+    private final UserRoleService userRoleService;
 
     private final RoleMapping roleMapping;
 
@@ -78,5 +82,12 @@ public class RoleController {
             throw new JiamingException("角色不存在");
         }
         return Result.valid(roleService.removeById(roleId));
+    }
+
+    @PostMapping("/assign")
+    @ApiOperation(value = "分配角色", notes = "分配角色")
+    public Result<Void> assign(@Valid @RequestBody UserRoleDTO userRoleDTO) {
+        userRoleService.assign(userRoleDTO);
+        return Result.ok();
     }
 }

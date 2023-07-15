@@ -1,5 +1,6 @@
 package com.deepcode.jiaming.admin.service;
 
+import com.deepcode.jiaming.admin.dto.UserRoleDTO;
 import com.deepcode.jiaming.admin.entity.UserRole;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -13,4 +14,10 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface UserRoleService extends IService<UserRole> {
 
+    /**
+     * 分配角色
+     *
+     * @param userRoleDTO 用户角色dto
+     */
+    void assign(UserRoleDTO userRoleDTO);
 }
