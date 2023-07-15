@@ -1,7 +1,7 @@
 package com.deepcode.jiaming.admin.service;
 
-import com.deepcode.jiaming.admin.entity.Menu;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.deepcode.jiaming.admin.entity.Menu;
 import com.deepcode.jiaming.admin.vo.RouteVo;
 
 import java.util.List;

@@ -31,6 +31,9 @@ public class RouteVo implements Serializable {
     @ApiModelProperty("状态")
     private Integer enable;
 
+    @ApiModelProperty("菜单类型 0：目录 1：菜单 2：按钮")
+    private Integer type;
+
     @ApiModelProperty("组件：1:Layout 不会跳转界面 2:demo/demo 会跳转到该界面")
     private String component;
 

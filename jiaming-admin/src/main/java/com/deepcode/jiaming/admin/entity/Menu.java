@@ -82,4 +82,7 @@ public class Menu extends BaseEntity {
 
     @ApiModelProperty("是否启用 1：启用 0：禁用")
     private Integer enable;
+
+    @ApiModelProperty("菜单类型 0：目录 1：菜单 2：按钮")
+    private Integer type;
 }
