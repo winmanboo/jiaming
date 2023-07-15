@@ -11,6 +11,8 @@ import com.deepcode.jiaming.base.PageList;
 import com.deepcode.jiaming.base.PageParam;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 /**
  * <p>
  * 系统角色 服务实现类
@@ -26,5 +28,10 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role> implements Ro
     public PageList<RoleVo> pageList(PageParam pageParam, RoleDTO roleDTO) {
         IPage<RoleVo> page = baseMapper.pageList(pageParam.toPage(), roleDTO);
         return PageList.turnTo(page);
+    }
+
+    @Override
+    public List<RoleVo> listVo() {
+        return baseMapper.listVo();
     }
 }

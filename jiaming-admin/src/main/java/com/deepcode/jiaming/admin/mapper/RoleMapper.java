@@ -8,6 +8,8 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.deepcode.jiaming.admin.vo.RoleVo;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.List;
+
 /**
  * <p>
  * 系统角色 Mapper 接口
@@ -26,4 +28,11 @@ public interface RoleMapper extends BaseMapper<Role> {
      * @return {@link IPage}<{@link RoleVo}>
      */
     IPage<RoleVo> pageList(@Param("page") Page<RoleVo> page, @Param("role") RoleDTO roleDTO);
+
+    /**
+     * 角色列表
+     *
+     * @return {@link List}<{@link RoleVo}>
+     */
+    List<RoleVo> listVo();
 }

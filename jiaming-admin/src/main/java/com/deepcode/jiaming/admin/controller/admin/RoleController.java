@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -32,6 +33,13 @@ public class RoleController {
     private final RoleService roleService;
 
     private final RoleMapping roleMapping;
+
+    @GetMapping("/list")
+    @ApiOperation(value = "角色列表", notes = "角色列表（不分页）")
+    public Result<List<RoleVo>> list() {
+        List<RoleVo> roleList = roleService.listVo();
+        return Result.ok(roleList);
+    }
 
     @GetMapping("/page")
     @ApiOperation(value = "角色分页信息", notes = "角色分页信息")

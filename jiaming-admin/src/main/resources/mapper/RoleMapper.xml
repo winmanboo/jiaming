@@ -2,8 +2,13 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.deepcode.jiaming.admin.mapper.RoleMapper">
 
+    <sql id="Vo_Column">
+        id, name, code, status, create_time, remark
+    </sql>
+
     <select id="pageList" resultType="com.deepcode.jiaming.admin.vo.RoleVo">
-        select id, name, code, status, create_time, remark
+        select
+        <include refid="Vo_Column"/>
         from sys_role
         where deleted = 0
         <if test="role.name != null and role.name != ''">
@@ -21,5 +26,11 @@
         <if test="role.endTime != null and role.endTime != ''">
             and create_time &lt;= #{role.endTime}
         </if>
+    </select>
+    <select id="listVo" resultType="com.deepcode.jiaming.admin.vo.RoleVo">
+        select
+        <include refid="Vo_Column"/>
+        from sys_role
+        where deleted = 0
     </select>
 </mapper>

@@ -7,6 +7,8 @@ import com.deepcode.jiaming.admin.vo.RoleVo;
 import com.deepcode.jiaming.base.PageList;
 import com.deepcode.jiaming.base.PageParam;
 
+import java.util.List;
+
 /**
  * <p>
  * 系统角色 服务类
@@ -25,4 +27,11 @@ public interface RoleService extends IService<Role> {
      * @return {@link PageList}<{@link RoleVo}>
      */
     PageList<RoleVo> pageList(PageParam pageParam, RoleDTO roleDTO);
+
+    /**
+     * 角色列表
+     *
+     * @return {@link List}<{@link RoleVo}>
+     */
+    List<RoleVo> listVo();
 }
