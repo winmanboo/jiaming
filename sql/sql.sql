@@ -109,7 +109,8 @@ create table sys_menu
     create_time datetime        not null default current_timestamp comment '创建时间',
     update_time datetime        not null default current_timestamp on update current_timestamp comment '更新时间',
     deleted     tinyint         not null default 0 comment '是否删除 0:未删除 1:删除',
-    enable      tinyint         not null default 1 comment '是否启用 1：启用 0：禁用'
+    enable      tinyint         not null default 1 comment '是否启用 1：启用 0：禁用',
+    type        tinyint         not null default 0 comment '菜单类型 0：目录 1：菜单 2：按钮'
 ) engine InnoDB comment '系统菜单';
 
 create table sys_role_menu
