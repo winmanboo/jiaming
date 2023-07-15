@@ -7,13 +7,25 @@
         <foreach collection="menuIds" open="(" close=")" item="menuId" separator=",">
             #{menuId}
         </foreach>
+        <if test="name != null and name != ''">
+            and name = #{name}
+        </if>
+        <if test="enable != null">
+            and enable = #{enable}
+        </if>
     </select>
     <select id="loadMenuListByUserId" resultType="com.deepcode.jiaming.admin.entity.Menu">
         select distinct sm.*
         from sys_menu sm
-                 inner join sys_role_menu srm on sm.id = srm.menu_id
-                 inner join sys_user_role sur on srm.role_id = sur.role_id
+        inner join sys_role_menu srm on sm.id = srm.menu_id
+        inner join sys_user_role sur on srm.role_id = sur.role_id
         where sur.user_id = #{userId}
-          and sm.enable = 1
+        and sm.enable = 1
+        <if test="name != null and name != ''">
+            and sm.name = #{name}
+        </if>
+        <if test="enable != null">
+            and sm.enable = #{enable}
+        </if>
     </select>
 </mapper>

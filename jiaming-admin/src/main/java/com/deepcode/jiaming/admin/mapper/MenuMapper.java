@@ -20,15 +20,19 @@ public interface MenuMapper extends BaseMapper<Menu> {
      * 根据菜单id列表查询菜单列表
      *
      * @param menuIds 菜单id 列表
+     * @param name    菜单名称
+     * @param enable  菜单状态
      * @return {@link List}<{@link Menu}>
      */
-    List<Menu> loadMenuListByMenuIds(@Param("menuIds") List<Long> menuIds);
+    List<Menu> loadMenuListByMenuIds(@Param("menuIds") List<Long> menuIds, @Param("name") String name, @Param("enable") Integer enable);
 
     /**
      * 通过用户id加载菜单列表
      *
      * @param userId 用户id
+     * @param name   菜单名称
+     * @param enable 菜单状态
      * @return {@link List}<{@link Menu}>
      */
-    List<Menu> loadMenuListByUserId(@Param("userId") Long userId);
+    List<Menu> loadMenuListByUserId(@Param("userId") Long userId, @Param("name") String name, @Param("enable") Integer enable);
 }

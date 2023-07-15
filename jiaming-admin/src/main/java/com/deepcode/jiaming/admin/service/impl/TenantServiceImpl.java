@@ -1,16 +1,15 @@
 package com.deepcode.jiaming.admin.service.impl;
 
 import cn.hutool.core.text.CharSequenceUtil;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.deepcode.jiaming.admin.entity.Tenant;
 import com.deepcode.jiaming.admin.mapper.TenantMapper;
 import com.deepcode.jiaming.admin.service.TenantService;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -29,6 +28,6 @@ public class TenantServiceImpl extends ServiceImpl<TenantMapper, Tenant> impleme
         if (CharSequenceUtil.isEmpty(menuIds)) {
             return Collections.emptyList();
         }
-        return Arrays.stream(menuIds.split(",")).map(Long::valueOf).collect(Collectors.toList());
+        return Arrays.stream(menuIds.split(",")).map(Long::valueOf).toList();
     }
 }

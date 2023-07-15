@@ -22,6 +22,15 @@ public class RouteVo implements Serializable {
     @ApiModelProperty("路径，例如 uri")
     private String path;
 
+    @ApiModelProperty("图标")
+    private String icon;
+
+    @ApiModelProperty("权限标识")
+    private String permission;
+
+    @ApiModelProperty("状态")
+    private Integer enable;
+
     @ApiModelProperty("组件：1:Layout 不会跳转界面 2:demo/demo 会跳转到该界面")
     private String component;
 

@@ -38,6 +38,9 @@ public class Menu extends BaseEntity {
     @ApiModelProperty("路径")
     private String path;
 
+    @ApiModelProperty("权限标识")
+    private String permission;
+
     @ApiModelProperty("1:Layout 不会跳转界面 2:demo/demo 会跳转到该界面")
     private String component;
 

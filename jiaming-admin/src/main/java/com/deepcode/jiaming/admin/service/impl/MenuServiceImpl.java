@@ -1,5 +1,8 @@
 package com.deepcode.jiaming.admin.service.impl;
 
+import cn.hutool.core.text.CharSequenceUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.deepcode.jiaming.admin.entity.Menu;
 import com.deepcode.jiaming.admin.mapper.MenuMapper;
@@ -17,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * <p>
@@ -32,19 +36,23 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
     private final TenantService tenantService;
 
     @Override
-    public List<RouteVo> loadRouteList() {
+    public List<RouteVo> loadRouteList(String name, Integer enable) {
         UserInfo userInfo = UserInfoContext.get();
         Long tenantId = userInfo.getTenantId();
 
         List<Menu> menus; // 菜单权限
         if (SystemUtil.isPlatformAdmin(tenantId)) { // 如果是平台管理员获取全量菜单
-            menus = list();
+            LambdaQueryWrapper<Menu> queryWrapper = Wrappers.lambdaQuery();
+                queryWrapper.eq(Objects.nonNull(name) && CharSequenceUtil.isNotEmpty(name),
+                                Menu::getName, name)
+                        .eq(Objects.nonNull(enable), Menu::getEnable, enable);
+            menus = list(queryWrapper);
         } else { // 如果不是，获取用户可见菜单
             List<Long> menuIds = tenantService.loadPackageMenuIds(tenantId);
             if (Boolean.TRUE.equals(userInfo.getIsAdmin())) { // 如果是租户管理员，则查出租户可见的全部菜单
-                menus = baseMapper.loadMenuListByMenuIds(menuIds);
+                menus = baseMapper.loadMenuListByMenuIds(menuIds, name, enable);
             } else { // 如果不是租户管理员，只是租户的用户，根据用户角色拿到可见的菜单
-                menus = baseMapper.loadMenuListByUserId(userInfo.getUserId());
+                menus = baseMapper.loadMenuListByUserId(userInfo.getUserId(), name, enable);
                 boolean match = menus.stream().map(Menu::getId).allMatch(menuIds::contains);
                 if (!match) {
                     throw new JiamingException("菜单数据异常");
@@ -54,6 +62,9 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
 
         List<RouteVo> routes = menus.stream().map(menu -> {
             RouteVo route = new RouteVo();
+            route.setIcon(menu.getIcon());
+            route.setPermission(menu.getPermission());
+            route.setEnable(menu.getEnable());
             route.setAlwaysShow(BooleanNumUtil.isTrue(menu.getAlwaysShow()));
             route.setComponent(menu.getComponent());
             route.setHidden(BooleanNumUtil.isTrue(menu.getHidden()));
@@ -75,6 +86,7 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
             return route;
         }).toList();
 
-        return RouteHelper.generateRouteTree(routes);
+        List<RouteVo> tree = RouteHelper.generateRouteTree(routes);
+        return tree.isEmpty() ? routes : tree;
     }
 }

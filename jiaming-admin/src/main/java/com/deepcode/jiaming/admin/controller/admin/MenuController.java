@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -29,8 +30,8 @@ public class MenuController {
 
     @GetMapping("/route")
     @ApiOperation(value = "路由菜单", notes = "获取当前用户可用的菜单资源，携带租户 id")
-    public Result<List<RouteVo>> route() {
-        List<RouteVo> routes = menuService.loadRouteList();
+    public Result<List<RouteVo>> route(@RequestParam(required = false) String name, @RequestParam(required = false) Integer enable) {
+        List<RouteVo> routes = menuService.loadRouteList(name, enable);
         return Result.ok(routes);
     }
 }
