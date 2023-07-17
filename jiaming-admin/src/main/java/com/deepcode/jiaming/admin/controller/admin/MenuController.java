@@ -1,9 +1,11 @@
 package com.deepcode.jiaming.admin.controller.admin;
 
 import com.deepcode.jiaming.admin.dto.MenuDTO;
+import com.deepcode.jiaming.admin.dto.RoleMenuAssignDTO;
 import com.deepcode.jiaming.admin.entity.Menu;
 import com.deepcode.jiaming.admin.mapping.MenuMapping;
 import com.deepcode.jiaming.admin.service.MenuService;
+import com.deepcode.jiaming.admin.service.RoleMenuService;
 import com.deepcode.jiaming.admin.vo.RouteVo;
 import com.deepcode.jiaming.result.Result;
 import com.deepcode.jiaming.valid.UpdateGroup;
@@ -30,6 +32,8 @@ import java.util.List;
 public class MenuController {
 
     private final MenuService menuService;
+
+    private final RoleMenuService roleMenuService;
 
     private final MenuMapping menuMapping;
 
@@ -72,5 +76,18 @@ public class MenuController {
     @ApiOperation(value = "删除菜单", notes = "根据 id 删除菜单")
     public Result<Void> remove(@PathVariable Long menuId) {
         return Result.valid(menuService.removeById(menuId));
+    }
+
+    @GetMapping("/assign_list/{roleId}")
+    @ApiOperation(value = "角色关联的菜单 id 列表", notes = "角色关联的菜单 id 列表")
+    public Result<List<Long>> assignList(@PathVariable Long roleId) {
+        return Result.ok(roleMenuService.assignMenuIdList(roleId));
+    }
+
+    @PostMapping("/assign_menu")
+    @ApiOperation(value = "角色关联菜单", notes = "角色关联菜单")
+    public Result<Void> assignMenu(@RequestBody RoleMenuAssignDTO roleMenuAssignDTO) {
+        roleMenuService.assignMenu(roleMenuAssignDTO);
+        return Result.ok();
     }
 }
