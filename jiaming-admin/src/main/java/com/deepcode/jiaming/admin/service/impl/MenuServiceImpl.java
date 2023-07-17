@@ -62,6 +62,7 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
 
         List<RouteVo> routes = menus.stream().map(menu -> {
             RouteVo route = new RouteVo();
+            route.setType(menu.getType());
             route.setIcon(menu.getIcon());
             route.setPermission(menu.getPermission());
             route.setEnable(menu.getEnable());

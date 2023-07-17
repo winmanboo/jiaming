@@ -3,6 +3,7 @@ package com.deepcode.jiaming.admin.controller.admin;
 import com.deepcode.jiaming.admin.dto.MenuDTO;
 import com.deepcode.jiaming.admin.dto.RoleMenuAssignDTO;
 import com.deepcode.jiaming.admin.entity.Menu;
+import com.deepcode.jiaming.admin.enums.MenuType;
 import com.deepcode.jiaming.admin.mapping.MenuMapping;
 import com.deepcode.jiaming.admin.service.MenuService;
 import com.deepcode.jiaming.admin.service.RoleMenuService;
@@ -16,6 +17,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * <p>
@@ -50,7 +52,7 @@ public class MenuController {
     public Result<Void> add(@RequestBody MenuDTO menuDTO) {
         Menu menu = menuMapping.toMenu(menuDTO);
         menu.setTitle(menuDTO.getName());
-        if (menu.getParentId() == 0) {
+        if (menu.getType() == MenuType.CATALOG.getCode() || Objects.isNull(menu.getComponent())) {
             menu.setComponent("Layout");
         }
         return Result.valid(menuService.save(menu));

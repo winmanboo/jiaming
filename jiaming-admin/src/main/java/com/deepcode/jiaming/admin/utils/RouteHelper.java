@@ -1,5 +1,6 @@
 package com.deepcode.jiaming.admin.utils;
 
+import com.deepcode.jiaming.admin.enums.MenuType;
 import com.deepcode.jiaming.admin.vo.RouteVo;
 import lombok.experimental.UtilityClass;
 
@@ -25,7 +26,8 @@ public class RouteHelper {
     public static List<RouteVo> generateRouteTree(List<RouteVo> menus) {
         List<RouteVo> routes = new ArrayList<>();
         menus.forEach(menu -> {
-            if (menu.getParentId() == 0) {
+            Integer menuType = menu.getType();
+            if (MenuType.CATALOG.getCode() == menuType) {
                 routes.add(childrenRoute(menu, menus));
             }
         });
@@ -40,14 +42,13 @@ public class RouteHelper {
      * @return 子路由
      */
     private static RouteVo childrenRoute(RouteVo route, List<RouteVo> routes) {
-        List<RouteVo> children = routes.stream().filter(item -> {
+        List<RouteVo> childRoute = new ArrayList<>();
+        routes.forEach(item -> {
             if (Objects.equals(route.getId(), item.getParentId())) {
-                childrenRoute(item, routes);
-                return true;
+                childRoute.add(childrenRoute(item, routes));
             }
-            return false;
-        }).toList();
-        route.setChildren(children);
+        });
+        route.setChildren(childRoute);
         return route;
     }
 }
