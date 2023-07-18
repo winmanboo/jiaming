@@ -1,7 +1,8 @@
 package com.deepcode.jiaming.admin.mapper;
 
-import com.deepcode.jiaming.admin.entity.Dept;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.deepcode.jiaming.admin.dto.DeptDTO;
+import com.deepcode.jiaming.admin.entity.Dept;
 import com.deepcode.jiaming.admin.vo.DeptVo;
 import org.apache.ibatis.annotations.Param;
 
@@ -20,8 +21,8 @@ public interface DeptMapper extends BaseMapper<Dept> {
     /**
      * 部门列表
      *
-     * @param tenantId 租户 id
+     * @param deptDTO 部门参数
      * @return {@link List}<{@link DeptVo}>
      */
-    List<DeptVo> listDeptVo(@Param("tenantId") Long tenantId);
+    List<DeptVo> listDeptVo(@Param("dept") DeptDTO deptDTO);
 }

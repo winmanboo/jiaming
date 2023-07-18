@@ -3,9 +3,22 @@
 <mapper namespace="com.deepcode.jiaming.admin.mapper.DeptMapper">
 
     <select id="listDeptVo" resultType="com.deepcode.jiaming.admin.vo.DeptVo">
-        select id, name, parent_id, leader_user_id, phone, email
-        from sys_dept
-        where tenant_id = #{tenantId}
-          and status = 1
+        select sd.id,
+        sd.name,
+        sd.parent_id,
+        sd.phone,
+        sd.email,
+        sd.status,
+        sd.create_time,
+        su.nickname as leader
+        from sys_dept sd
+        left join sys_user su on sd.leader_user_id = su.id
+        where sd.status = 1
+        <if test="dept != null and dept.name != null and dept.name != ''">
+            and sd.name like concat(#{dept.name}, '%')
+        </if>
+        <if test="dept != null and dept.status != null">
+            and sd.status = #{dept.status}
+        </if>
     </select>
 </mapper>

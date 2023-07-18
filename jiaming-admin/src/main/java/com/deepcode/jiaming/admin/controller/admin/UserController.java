@@ -18,6 +18,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -55,6 +56,13 @@ public class UserController {
     public Result<PageList<UserVo>> page(@Valid PageParam pageParam, UserDTO userDTO) {
         PageList<UserVo> pageList = userService.pageList(pageParam, userDTO);
         return Result.ok(pageList);
+    }
+
+    @GetMapping("/leader_list")
+    @ApiOperation(value = "负责人列表", notes = "负责人列表")
+    public Result<List<UserVo>> list() {
+        List<UserVo> userList = userService.leaderList();
+        return Result.ok(userList);
     }
 
     @PostMapping("/status")

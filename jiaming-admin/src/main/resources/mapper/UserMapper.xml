@@ -68,4 +68,9 @@
         left join sys_user_role sur on su.id = sur.user_id
         where su.id = #{userId}
     </select>
+    <select id="leaderList" resultType="com.deepcode.jiaming.admin.vo.UserVo">
+        select id, nickname
+        from sys_user
+        where status = 1
+    </select>
 </mapper>

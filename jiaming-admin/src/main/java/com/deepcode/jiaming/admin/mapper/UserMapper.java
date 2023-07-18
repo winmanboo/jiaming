@@ -35,4 +35,11 @@ public interface UserMapper extends BaseMapper<User> {
      * @return {@link UserVo}
      */
     UserVo getUserInfo(@Param("userId") Long userId);
+
+    /**
+     * 负责人名单
+     *
+     * @return {@link List}<{@link UserVo}>
+     */
+    List<UserVo> leaderList();
 }

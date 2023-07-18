@@ -1,7 +1,9 @@
 package com.deepcode.jiaming.admin.vo;
 
+import com.deepcode.jiaming.base.BaseEntity;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.util.List;
 
@@ -12,7 +14,8 @@ import java.util.List;
  * @date 2023/7/12 17:08
  */
 @Data
-public class DeptVo {
+@EqualsAndHashCode(callSuper = true)
+public class DeptVo extends BaseEntity {
     @ApiModelProperty("部门id")
     private Long id;
 
@@ -22,8 +25,14 @@ public class DeptVo {
     @ApiModelProperty("父部门id")
     private Long parentId;
 
+    @ApiModelProperty("负责人 id")
+    private String leaderUserId;
+
     @ApiModelProperty("负责人")
-    private Long leaderUserId;
+    private String leader;
+
+    @ApiModelProperty("状态")
+    private Integer status;
 
     @ApiModelProperty("联系电话")
     private String phone;

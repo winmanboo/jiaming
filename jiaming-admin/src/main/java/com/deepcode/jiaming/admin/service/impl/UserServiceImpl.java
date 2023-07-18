@@ -17,6 +17,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -84,5 +85,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             throw new JiamingException("用户不存在");
         }
         return lambdaUpdate().eq(User::getId, userId).set(User::getPassword, passwordEncoder.encode(password)).update();
+    }
+
+    @Override
+    public List<UserVo> leaderList() {
+        return baseMapper.leaderList();
     }
 }

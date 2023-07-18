@@ -7,6 +7,8 @@ import com.deepcode.jiaming.admin.vo.UserVo;
 import com.deepcode.jiaming.base.PageList;
 import com.deepcode.jiaming.base.PageParam;
 
+import java.util.List;
+
 /**
  * <p>
  * 系统用户 服务类
@@ -65,4 +67,11 @@ public interface UserService extends IService<User> {
      * @return boolean
      */
     boolean resetPassword(Long userId, String password);
+
+    /**
+     * 负责人名单
+     *
+     * @return {@link List}<{@link UserVo}>
+     */
+    List<UserVo> leaderList();
 }

@@ -1,5 +1,6 @@
 package com.deepcode.jiaming.admin.service;
 
+import com.deepcode.jiaming.admin.dto.DeptDTO;
 import com.deepcode.jiaming.admin.entity.Dept;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.deepcode.jiaming.admin.vo.DeptVo;
@@ -19,7 +20,8 @@ public interface DeptService extends IService<Dept> {
     /**
      * 部门列表
      *
+     * @param deptDTO 部门参数
      * @return {@link List}<{@link DeptVo}>
      */
-    List<DeptVo> listDeptVo();
+    List<DeptVo> listDeptVo(DeptDTO deptDTO);
 }
