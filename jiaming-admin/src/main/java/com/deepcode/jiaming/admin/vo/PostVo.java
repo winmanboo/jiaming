@@ -1,14 +1,17 @@
 package com.deepcode.jiaming.admin.vo;
 
+import com.deepcode.jiaming.base.BaseEntity;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * @author winmanboo
  * @date 2023/7/14 17:29
  */
 @Data
-public class PostVo {
+@EqualsAndHashCode(callSuper = true)
+public class PostVo extends BaseEntity {
     @ApiModelProperty("岗位id")
     private Long id;
 

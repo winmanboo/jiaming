@@ -7,4 +7,18 @@
         from sys_post
         where tenant_id = #{tenantId}
     </select>
+    <select id="pageVo" resultType="com.deepcode.jiaming.admin.vo.PostVo">
+        select id, code, name, status, create_time
+        from sys_post
+        where deleted = 0
+        <if test="post != null and post.code != null and post.code != ''">
+            and code = #{post.code}
+        </if>
+        <if test="post != null and post.name != null and post.name != ''">
+            and name = #{post.name}
+        </if>
+        <if test="post != null and post.status != null">
+            and status = #{post.status}
+        </if>
+    </select>
 </mapper>
