@@ -13,7 +13,7 @@
         su.nickname as leader
         from sys_dept sd
         left join sys_user su on sd.leader_user_id = su.id
-        where sd.status = 1
+        where sd.status = 1 and sd.deleted = 0
         <if test="dept != null and dept.name != null and dept.name != ''">
             and sd.name like concat(#{dept.name}, '%')
         </if>

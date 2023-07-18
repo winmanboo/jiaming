@@ -60,4 +60,10 @@ public class DeptController {
         Dept dept = deptMapping.toDept(deptDTO);
         return Result.valid(deptService.updateById(dept));
     }
+
+    @DeleteMapping("/remove/{deptId}")
+    @ApiOperation(value = "删除部门", notes = "根据 id 删除部门")
+    public Result<Void> remove(@PathVariable Long deptId) {
+        return Result.valid(deptService.removeById(deptId));
+    }
 }
