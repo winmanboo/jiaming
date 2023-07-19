@@ -1,18 +1,30 @@
 package com.deepcode.jiaming.uaa.controller;
 
-import com.deepcode.jiaming.exception.JiamingException;
+import com.deepcode.jiaming.api.uaa.OAuth2ClientVo;
+import com.deepcode.jiaming.api.uaa.dto.OAuth2ClientDTO;
+import com.deepcode.jiaming.api.uaa.entity.TokenSettingVo;
+import com.deepcode.jiaming.base.PageList;
+import com.deepcode.jiaming.base.PageParam;
 import com.deepcode.jiaming.result.Result;
+import com.deepcode.jiaming.uaa.service.OAuth2ClientService;
+import com.deepcode.jiaming.valid.AddGroup;
+import com.deepcode.jiaming.valid.UpdateGroup;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.core.AuthorizationGrantType;
+import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.security.oauth2.server.authorization.client.JdbcRegisteredClientRepository;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.security.oauth2.server.authorization.settings.TokenSettings;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * 客户端控制器
@@ -21,16 +33,16 @@ import org.springframework.web.bind.annotation.ResponseBody;
  * @date 2023/6/3 21:43
  */
 @Slf4j
-@Controller
+@RestController
 @RequiredArgsConstructor
 @RequestMapping("/uaa/client")
 public class ClientController {
+
     private final JdbcRegisteredClientRepository registeredClientRepository;
 
-    private final LoadBalancerClient loadBalancerClient;
+    private final OAuth2ClientService oAuth2ClientService;
 
-    @Value("${spring.application.name}")
-    private String serviceName;
+    private final PasswordEncoder passwordEncoder;
 
     /**
      * 注册客户端信息
@@ -38,69 +50,88 @@ public class ClientController {
      * @param registeredClient 客户端信息
      * @return Result 结果
      */
-    @ResponseBody
     @PostMapping("/register")
-    public Result<Void> registerClient(@RequestBody RegisteredClient registeredClient) {
-        // TODO: 2023/6/6 用自定义实体类接收，不要用 security 自带的
-        if (registeredClient == null) {
-            throw new JiamingException("客户端信息不能为空");
-        }
-        registeredClientRepository.save(registeredClient);
+    public Result<Void> registerClient(@Validated({AddGroup.class}) @RequestBody OAuth2ClientDTO oAuth2ClientDTO) {
+        RegisteredClient.Builder builder = RegisteredClient.withId(oAuth2ClientDTO.getId())
+                .clientId(oAuth2ClientDTO.getClientId())
+                .clientIdIssuedAt(Instant.now())
+                .clientSecret(passwordEncoder.encode(oAuth2ClientDTO.getClientSecret()))
+                .clientSecretExpiresAt(null) // 暂定 secret 不会过期
+                .clientName(oAuth2ClientDTO.getClientName())
+                .clientAuthenticationMethods((authenticationMethods) -> {
+                    /*String[] methods = oAuth2ClientDTO.getClientAuthenticationMethods().split(",");
+                    for (String method : methods) {
+                        authenticationMethods.add(new ClientAuthenticationMethod(method));
+                    }*/
+                    authenticationMethods.add(ClientAuthenticationMethod.CLIENT_SECRET_BASIC); // 暂定所有注册客户端只支持 basic 认证
+                })
+                .authorizationGrantTypes((grantTypes) -> {
+                    String[] types = oAuth2ClientDTO.getAuthorizationGrantTypes().split(",");
+                    for (String type : types) {
+                        grantTypes.add(new AuthorizationGrantType(type));
+                    }
+                })
+                .redirectUris((uris) -> {
+                    String[] redirectUris = oAuth2ClientDTO.getRedirectUris().split(",");
+                    uris.addAll(Arrays.asList(redirectUris));
+                })
+                .scopes((scopes) -> {
+                    String[] scopeArray = oAuth2ClientDTO.getScopes().split(",");
+                    scopes.addAll(Arrays.asList(scopeArray));
+                })
+                .tokenSettings(TokenSettings.builder()
+                        .accessTokenTimeToLive(Duration.ofSeconds(oAuth2ClientDTO.getAccessTokenTimeToLive()))
+                        .refreshTokenTimeToLive(Duration.ofSeconds(oAuth2ClientDTO.getRefreshTokenTimeToLive()))
+                        .build());
+        registeredClientRepository.save(builder.build());
         return Result.ok();
     }
 
-    /**
-     * 重定向获取授权码（主要是前端第一次请求时，没有传递自定义 token 的话，在网关处会重定向到该接口发起获取授权码，走授权码模式）
-     *
-     * @param clientId 客户端 id
-     * @return
-     */
-    /*@GetMapping("/redirect_code")
-    public String redirectCode() {
-        RegisteredClient client = registeredClientRepository.findByClientId(OAuth2Constant.DEFAULT_CLIENT_ID);
-        if (client == null) {
-            throw new JiamingException("无法获取客户端信息");
-        }
-
-        // 重定向发起获取授权码
-        // 地址根据服务器名获取对应的 IP 地址和端口号，有三种方式
-        // 1. 通过 LoadBalancer 获取
-        // 2. 通过 DiscoveryClient 获取
-        // 3. 通过 NacosServiceManager 获取
-        // 方法请参考：https://blog.csdn.net/weixin_43888891/article/details/126755927
-        ServiceInstance instance = loadBalancerClient.choose(serviceName);
-        Set<String> scopes = client.getScopes();
-        String scope = getFirstScope(scopes);
-
-        Set<String> redirectUris = client.getRedirectUris();
-        String redirectUri = getFirstRedirectUri(redirectUris);
-
-        String url = instance.getUri() + "/oauth2/authorize?response_type=code" +
-                "&client_id=" + client.getClientId() +
-                "&scope=" + scope +
-                "&redirect_uri=" + redirectUri;
-        return "redirect:" + url;
+    @GetMapping("/page")
+    public Result<PageList<OAuth2ClientVo>> page(PageParam pageParam, OAuth2ClientDTO oAuth2ClientDTO) {
+        PageList<OAuth2ClientVo> pageList = oAuth2ClientService.pageVo(pageParam, oAuth2ClientDTO);
+        return Result.ok(pageList);
     }
 
-    private String getFirstScope(Set<String> scopes) {
-        String[] scopeArray = scopes.toArray(new String[0]);
-
-        String scope = "";
-        if (ArrayUtil.isNotEmpty(scopeArray)) {
-            scope = scopeArray[0];
+    @GetMapping("/info/{id}")
+    public Result<OAuth2ClientVo> info(@PathVariable String id) {
+        RegisteredClient registeredClient = registeredClientRepository.findById(id);
+        if (Objects.isNull(registeredClient)) {
+            return Result.ok();
         }
+        OAuth2ClientVo oAuth2ClientVo = new OAuth2ClientVo();
+        oAuth2ClientVo.setId(registeredClient.getId());
+        oAuth2ClientVo.setClientId(registeredClient.getClientId());
+        oAuth2ClientVo.setClientName(registeredClient.getClientName());
+        oAuth2ClientVo.setClientSecret(registeredClient.getClientSecret());
+        oAuth2ClientVo.setClientIdIssuedAt(registeredClient.getClientIdIssuedAt());
+        oAuth2ClientVo.setClientSecretExpiresAt(registeredClient.getClientSecretExpiresAt());
+        List<String> methods = registeredClient.getClientAuthenticationMethods().stream()
+                .map(ClientAuthenticationMethod::getValue)
+                .toList();
+        oAuth2ClientVo.setClientAuthenticationMethods(String.join(",", methods));
+        oAuth2ClientVo.setScopes(String.join(",", registeredClient.getScopes()));
+        oAuth2ClientVo.setRedirectUris(String.join(",", registeredClient.getRedirectUris()));
+        List<String> types = registeredClient.getAuthorizationGrantTypes().stream()
+                .map(AuthorizationGrantType::getValue)
+                .toList();
+        oAuth2ClientVo.setAuthorizationGrantTypes(String.join(",", types));
 
-        return scope;
+        TokenSettingVo tokenSettingVo = new TokenSettingVo();
+        tokenSettingVo.setAccessTokenTimeToLive((double) registeredClient.getTokenSettings().getAccessTokenTimeToLive().toSeconds());
+        tokenSettingVo.setRefreshTokenTimeToLive((double) registeredClient.getTokenSettings().getRefreshTokenTimeToLive().toSeconds());
+
+        oAuth2ClientVo.setTokenSettingVo(tokenSettingVo);
+        return Result.ok(oAuth2ClientVo);
     }
 
-    private String getFirstRedirectUri(Set<String> redirectUris) {
-        String[] redirectUriArray = redirectUris.toArray(new String[0]);
-
-        String redirectUri = "";
-        if (ArrayUtil.isNotEmpty(redirectUriArray)) {
-            redirectUri = redirectUriArray[0];
+    @PutMapping("/update")
+    public Result<Void> update(@Validated(UpdateGroup.class) @RequestBody OAuth2ClientDTO oAuth2ClientDTO) {
+        RegisteredClient registeredClient = registeredClientRepository.findById(oAuth2ClientDTO.getId());
+        if (Objects.isNull(registeredClient)) {
+            return Result.fail("客户端不存在");
         }
-
-        return redirectUri;
-    }*/
+        oAuth2ClientService.update(oAuth2ClientDTO);
+        return Result.ok();
+    }
 }

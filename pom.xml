@@ -23,6 +23,7 @@
         <module>jiaming-common/jiaming-spring-boot-starter-redis</module>
         <module>jiaming-common/jiaming-spring-boot-starter-security</module>
         <module>jiaming-uaa</module>
+        <module>jiaming-api</module>
     </modules>
 
     <properties>

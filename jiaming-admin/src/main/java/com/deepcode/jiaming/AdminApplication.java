@@ -13,7 +13,7 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 @EnableCaching
 @SpringBootApplication
 @EnableAspectJAutoProxy(exposeProxy = true)
-@EnableFeignClients(basePackages = "com.deepcode.jiaming.admin.feign")
+@EnableFeignClients(basePackages = "com.deepcode.jiaming.api.**.feign")
 public class AdminApplication {
     public static void main(String[] args) {
         SpringApplication.run(AdminApplication.class, args);
