@@ -1,12 +1,12 @@
 package com.deepcode.jiaming.uaa.handler;
 
 import com.deepcode.jiaming.result.Result;
-import com.deepcode.jiaming.uaa.repository.JmtkJdbcOAuth2AuthorizationService;
 import com.deepcode.jiaming.utils.ResponseUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.server.authorization.JdbcOAuth2AuthorizationService;
 import org.springframework.security.oauth2.server.authorization.OAuth2Authorization;
 import org.springframework.security.oauth2.server.authorization.OAuth2TokenType;
 import org.springframework.security.oauth2.server.authorization.authentication.OAuth2TokenRevocationAuthenticationToken;
@@ -25,7 +25,7 @@ import java.util.Objects;
  */
 @RequiredArgsConstructor
 public class RevocationSuccessHandler implements AuthenticationSuccessHandler {
-    private final JmtkJdbcOAuth2AuthorizationService authorizationService;
+    private final JdbcOAuth2AuthorizationService authorizationService;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {

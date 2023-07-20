@@ -12,8 +12,8 @@ import com.deepcode.jiaming.uaa.grant.CaptchaAuthenticationProvider;
 import com.deepcode.jiaming.uaa.grant.CaptchaGrantAuthenticationConverter;
 import com.deepcode.jiaming.uaa.handler.RevocationSuccessHandler;
 import com.deepcode.jiaming.uaa.handler.token.SendResultAccessTokenResponseHandler;
+import com.deepcode.jiaming.uaa.point.AuthenticationEntryPointImpl;
 import com.deepcode.jiaming.uaa.properties.OAuth2Properties;
-import com.deepcode.jiaming.uaa.repository.JmtkJdbcOAuth2AuthorizationService;
 import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jose.jwk.JWKSet;
@@ -55,7 +55,6 @@ import org.springframework.security.oauth2.server.authorization.settings.ClientS
 import org.springframework.security.oauth2.server.authorization.settings.TokenSettings;
 import org.springframework.security.oauth2.server.authorization.token.*;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 
 import java.time.Duration;
@@ -70,13 +69,16 @@ import java.util.List;
 @RequiredArgsConstructor
 @EnableConfigurationProperties(value = OAuth2Properties.class)
 public class AuthorizationServerConfig {
+
     private final OAuth2Properties oAuth2Properties;
+
+    private final AuthenticationEntryPointImpl authenticationEntryPoint;
 
     @Bean
     @Order(Ordered.HIGHEST_PRECEDENCE)
     public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity httpSecurity,
-                                                                      JmtkJdbcOAuth2AuthorizationService authorizationService,
                                                                       AuthenticationManager authenticationManager,
+                                                                      JdbcOAuth2AuthorizationService authorizationService,
                                                                       OAuth2TokenGenerator<?> tokenGenerator,
                                                                       RedisTemplate<String, Object> redisTemplate) throws Exception {
         OAuth2AuthorizationServerConfigurer authorizationServerConfigurer =
@@ -109,7 +111,8 @@ public class AuthorizationServerConfig {
 
         httpSecurity.securityMatcher(endpointsMatcher)
                 .exceptionHandling()
-                .authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/login"))
+//                .authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/login"))
+                .authenticationEntryPoint(authenticationEntryPoint)
                 .and()
                 .authorizeHttpRequests(authorize ->
                         authorize.anyRequest().authenticated()
@@ -133,13 +136,9 @@ public class AuthorizationServerConfig {
     }
 
     @Bean
-    public JmtkJdbcOAuth2AuthorizationService authorizationService(JdbcTemplate jdbcTemplate,
-                                                                   RegisteredClientRepository registeredClientRepository,
-                                                                   RedisTemplate<String, Object> redisTemplate) {
-        JmtkJdbcOAuth2AuthorizationService authorizationService = new JmtkJdbcOAuth2AuthorizationService(jdbcTemplate,
-                registeredClientRepository,
-                redisTemplate,
-                oAuth2Properties);
+    public JdbcOAuth2AuthorizationService authorizationService(JdbcTemplate jdbcTemplate,
+                                                               RegisteredClientRepository registeredClientRepository) {
+        JdbcOAuth2AuthorizationService authorizationService = new JdbcOAuth2AuthorizationService(jdbcTemplate, registeredClientRepository);
         JdbcOAuth2AuthorizationService.OAuth2AuthorizationRowMapper rowMapper =
                 new JdbcOAuth2AuthorizationService.OAuth2AuthorizationRowMapper(registeredClientRepository);
         JdbcOAuth2AuthorizationService.OAuth2AuthorizationParametersMapper parametersMapper =
@@ -253,6 +252,7 @@ public class AuthorizationServerConfig {
      */
     private RegisteredClient createDefaultClient(PasswordEncoder passwordEncoder) {
         String redirectUri = oAuth2Properties.getGatewayUri() + "/jiaming/uaa/auth/code";
+        String defaultClientSecret = OAuth2Constant.DEFAULT_CLIENT_SECRET;
 
         if (CharSequenceUtil.isEmpty(redirectUri)) {
             throw new JiamingException("redirect uri can not be null");
@@ -268,7 +268,7 @@ public class AuthorizationServerConfig {
                 .authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS) // 客户端模式
                 .authorizationGrantType(AuthorizationGrantType.JWT_BEARER) // 这种模式其实就是简化模式
                 .authorizationGrantType(OAuth2GrantTypes.CAPTCHA) // 验证码模式
-                .clientSecret(passwordEncoder.encode(OAuth2Constant.DEFAULT_CLIENT_SECRET))
+                .clientSecret(passwordEncoder.encode(defaultClientSecret))
                 .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
                 .clientSettings(ClientSettings.builder().requireAuthorizationConsent(true).build())
                 .tokenSettings(TokenSettings.builder()

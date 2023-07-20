@@ -1,8 +1,8 @@
 spring:
   datasource:
-    url: jdbc:mysql://121.5.183.150:3307/jiaming?serverTimezone=GMT%2B8&userSSL=false&characterEncoding=utf-8
+    url: jdbc:mysql://localhost:3306/jiaming?serverTimezone=GMT%2B8&userSSL=false&characterEncoding=utf-8
     username: root
-    password: jiaming
+    password: mingge123
     driver-class-name: com.mysql.cj.jdbc.Driver
   cache:
     type: redis
@@ -10,9 +10,8 @@ spring:
       cache-null-values: true
   data:
     redis:
-      password: jiaming
-      host: 121.5.183.150
-      port: 6380
+      host: localhost
+      port: 6379
 
 tenant:
   ignore-tables:

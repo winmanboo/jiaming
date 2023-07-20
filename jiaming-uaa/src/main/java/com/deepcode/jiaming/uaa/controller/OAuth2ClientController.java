@@ -35,8 +35,8 @@ import java.util.Objects;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/uaa/client")
-public class ClientController {
+@RequestMapping("/uaa/oauth2-client")
+public class OAuth2ClientController {
 
     private final JdbcRegisteredClientRepository registeredClientRepository;
 

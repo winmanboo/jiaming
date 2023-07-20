@@ -45,8 +45,7 @@ public class AuthorizationManager implements ReactiveAuthorizationManager<Author
         }
 
         return authentication
-                .map(requestAuthentication ->
-                        new AuthorizationDecision(requestAuthentication.isAuthenticated()))
+                .map(requestAuthentication -> new AuthorizationDecision(requestAuthentication.isAuthenticated()))
                 .defaultIfEmpty(new AuthorizationDecision(false));
 
         /*return authentication.filter(Authentication::isAuthenticated)

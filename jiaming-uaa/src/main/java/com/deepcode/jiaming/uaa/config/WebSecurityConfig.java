@@ -59,8 +59,8 @@ public class WebSecurityConfig implements WebMvcConfigurer {
                 .and()
                 .authorizeHttpRequests()
                 .requestMatchers("/uaa/jwk/**",
-                         "/uaa/client/**",
-                        // "/uaa/oauth2/**",
+                        "/uaa/oauth2-client/**",
+                        "/uaa/oauth2-token/**",
                         "/uaa/auth/captcha",
                         "/uaa/auth/code").permitAll()
                 .anyRequest()
