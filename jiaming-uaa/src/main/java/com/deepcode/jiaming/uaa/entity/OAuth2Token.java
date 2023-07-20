@@ -29,6 +29,9 @@ public class OAuth2Token {
     @ApiModelProperty("授权作用域")
     private String authorizedScopes;
 
+    @ApiModelProperty("自定义 token")
+    private String token;
+
     @ApiModelProperty("访问令牌值")
     private String accessTokenValue;
 

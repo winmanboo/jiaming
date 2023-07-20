@@ -10,6 +10,7 @@ import com.deepcode.jiaming.uaa.entity.OAuth2Token;
 import com.deepcode.jiaming.uaa.service.OAuth2TokenService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -24,6 +25,8 @@ public class OAuth2TokenController {
 
     private final OAuth2TokenService oAuth2TokenService;
 
+    private final RedisTemplate<String, Object> redisTemplate;
+
     @GetMapping("/page")
     public Result<PageList<OAuth2Token>> page(PageParam pageParam) {
         LambdaQueryWrapper<OAuth2Token> queryWrapper = Wrappers.<OAuth2Token>lambdaQuery()
@@ -32,8 +35,15 @@ public class OAuth2TokenController {
         return Result.ok(PageList.turnTo(page));
     }
 
-    @DeleteMapping("/remove/{authorizationId}")
-    public Result<Void> remove(@PathVariable String authorizationId) {
-        return Result.valid(oAuth2TokenService.removeById(authorizationId));
+    /**
+     * 删除
+     *
+     * @param token 自定义令牌
+     * @return {@link Result}<{@link Void}>
+     */
+    @DeleteMapping("/remove/{token}")
+    public Result<Void> remove(@PathVariable String token) {
+        oAuth2TokenService.removeByToken(token);
+        return Result.ok();
     }
 }

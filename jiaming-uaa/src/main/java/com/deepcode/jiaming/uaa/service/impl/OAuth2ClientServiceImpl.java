@@ -70,6 +70,7 @@ public class OAuth2ClientServiceImpl extends ServiceImpl<OAuth2ClientMapper, OAu
 
     @Override
     public void update(OAuth2ClientDTO oAuth2ClientDTO) {
+        // FIXME: 2023/7/20 TokenSettings 没有更新
         OAuth2Client oAuth2Client = oAuth2ClientMapping.toOAuth2Client(oAuth2ClientDTO);
         this.updateById(oAuth2Client);
     }

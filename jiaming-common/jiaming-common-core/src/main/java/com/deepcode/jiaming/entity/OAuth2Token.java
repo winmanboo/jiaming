@@ -14,5 +14,9 @@ import lombok.NoArgsConstructor;
 public class OAuth2Token {
     private String accessToken;
 
+    private String refreshToken;
+
     private String tokenType;
+
+    private Long expiresIn;
 }

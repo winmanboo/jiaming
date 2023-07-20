@@ -3,6 +3,7 @@ package com.deepcode.jiaming.uaa.config;
 import cn.hutool.core.text.CharSequenceUtil;
 import com.deepcode.jiaming.constants.AuthConstant;
 import com.deepcode.jiaming.exception.JiamingException;
+import com.deepcode.jiaming.uaa.authorization.CustomJdbcOAuth2AuthorizationService;
 import com.deepcode.jiaming.uaa.constants.OAuth2Constant;
 import com.deepcode.jiaming.uaa.constants.OAuth2GrantTypes;
 import com.deepcode.jiaming.uaa.deserializer.LongMixin;
@@ -14,6 +15,7 @@ import com.deepcode.jiaming.uaa.handler.RevocationSuccessHandler;
 import com.deepcode.jiaming.uaa.handler.token.SendResultAccessTokenResponseHandler;
 import com.deepcode.jiaming.uaa.point.AuthenticationEntryPointImpl;
 import com.deepcode.jiaming.uaa.properties.OAuth2Properties;
+import com.deepcode.jiaming.uaa.service.OAuth2TokenService;
 import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jose.jwk.JWKSet;
@@ -74,6 +76,8 @@ public class AuthorizationServerConfig {
 
     private final AuthenticationEntryPointImpl authenticationEntryPoint;
 
+    private final OAuth2TokenService oAuth2TokenService;
+
     @Bean
     @Order(Ordered.HIGHEST_PRECEDENCE)
     public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity httpSecurity,
@@ -107,7 +111,7 @@ public class AuthorizationServerConfig {
                 .tokenEndpoint(tokenEndpoint -> tokenEndpoint
                         .accessTokenRequestConverter(authenticationConverter)
                         .authenticationProvider(authenticationProvider)
-                        .accessTokenResponseHandler(new SendResultAccessTokenResponseHandler()));
+                        .accessTokenResponseHandler(new SendResultAccessTokenResponseHandler(oAuth2Properties, redisTemplate, oAuth2TokenService)));
 
         httpSecurity.securityMatcher(endpointsMatcher)
                 .exceptionHandling()
@@ -138,11 +142,14 @@ public class AuthorizationServerConfig {
     @Bean
     public JdbcOAuth2AuthorizationService authorizationService(JdbcTemplate jdbcTemplate,
                                                                RegisteredClientRepository registeredClientRepository) {
-        JdbcOAuth2AuthorizationService authorizationService = new JdbcOAuth2AuthorizationService(jdbcTemplate, registeredClientRepository);
+        // JdbcOAuth2AuthorizationService authorizationService = new JdbcOAuth2AuthorizationService(jdbcTemplate, registeredClientRepository);
+        CustomJdbcOAuth2AuthorizationService authorizationService = new CustomJdbcOAuth2AuthorizationService(jdbcTemplate, registeredClientRepository);
         JdbcOAuth2AuthorizationService.OAuth2AuthorizationRowMapper rowMapper =
                 new JdbcOAuth2AuthorizationService.OAuth2AuthorizationRowMapper(registeredClientRepository);
-        JdbcOAuth2AuthorizationService.OAuth2AuthorizationParametersMapper parametersMapper =
-                new JdbcOAuth2AuthorizationService.OAuth2AuthorizationParametersMapper();
+        /*JdbcOAuth2AuthorizationService.OAuth2AuthorizationParametersMapper parametersMapper =
+                new JdbcOAuth2AuthorizationService.OAuth2AuthorizationParametersMapper();*/
+        CustomJdbcOAuth2AuthorizationService.CustomOAuth2AuthorizationParametersMapper parametersMapper =
+                new CustomJdbcOAuth2AuthorizationService.CustomOAuth2AuthorizationParametersMapper();
 
         ObjectMapper objectMapper = new ObjectMapper();
         ClassLoader classLoader = JdbcOAuth2AuthorizationService.class.getClassLoader();
