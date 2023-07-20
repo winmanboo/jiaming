@@ -52,5 +52,7 @@ CREATE TABLE oauth2_authorization
     refresh_token_issued_at       timestamp     DEFAULT NULL,
     refresh_token_expires_at      timestamp     DEFAULT NULL,
     refresh_token_metadata        blob          DEFAULT NULL,
+    # 自定义 token 字段，用于保存业务 token
+    token                         varchar(1000) default null comment '自定义 token',
     PRIMARY KEY (id)
 );
