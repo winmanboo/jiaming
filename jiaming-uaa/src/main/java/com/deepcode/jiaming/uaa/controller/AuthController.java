@@ -5,12 +5,10 @@ import cn.hutool.captcha.GifCaptcha;
 import cn.hutool.core.util.IdUtil;
 import com.deepcode.jiaming.result.Result;
 import com.deepcode.jiaming.uaa.constants.Keys;
-import com.deepcode.jiaming.uaa.properties.OAuth2Properties;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -29,13 +27,7 @@ import java.util.Map;
 @RequestMapping("/uaa/auth")
 public class AuthController {
 
-    private static final String OAUTH2_TOKEN_ENDPOINT = "/jiaming/uaa/oauth2/token";
-
     private final RedisTemplate<String, Object> redisTemplate;
-
-    private final RegisteredClientRepository registeredClientRepository;
-
-    private final OAuth2Properties oAuth2Properties;
 
     @ResponseBody
     @GetMapping("/captcha")
