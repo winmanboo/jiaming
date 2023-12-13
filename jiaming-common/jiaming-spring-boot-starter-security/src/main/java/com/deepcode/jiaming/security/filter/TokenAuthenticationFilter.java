@@ -8,11 +8,12 @@ import cn.hutool.jwt.JWTPayload;
 import cn.hutool.jwt.JWTUtil;
 import com.deepcode.jiaming.constants.AuthConstant;
 import com.deepcode.jiaming.constants.OAuth2Constant;
-import com.deepcode.jiaming.security.context.UserInfoContext;
-import com.deepcode.jiaming.security.domain.UserInfo;
 import com.deepcode.jiaming.result.Result;
 import com.deepcode.jiaming.result.UserResultStatus;
+import com.deepcode.jiaming.security.context.UserInfoContext;
+import com.deepcode.jiaming.security.domain.UserInfo;
 import com.deepcode.jiaming.utils.ResponseUtil;
+import jakarta.annotation.Nonnull;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -22,8 +23,6 @@ import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-
-import javax.annotation.Nonnull;
 
 /**
  * 解析 token 并存储用户信息到当前线程的过滤器

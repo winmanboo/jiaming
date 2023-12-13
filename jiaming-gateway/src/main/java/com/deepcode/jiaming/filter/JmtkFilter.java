@@ -6,6 +6,7 @@ import com.deepcode.jiaming.constants.AuthConstant;
 import com.deepcode.jiaming.constants.Constants;
 import com.deepcode.jiaming.constants.OAuth2Constant;
 import com.deepcode.jiaming.entity.OAuth2Token;
+import jakarta.annotation.Nonnull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -16,7 +17,6 @@ import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
 import reactor.core.publisher.Mono;
 
-import javax.annotation.Nonnull;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.Objects;

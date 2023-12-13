@@ -3,14 +3,11 @@ package com.deepcode.jiaming.properties;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-import java.util.List;
-
 /**
  * @author winmanboo
- * @date 2023/7/15 10:10
+ * @date 2023/12/13 16:55
  */
 @Data
-@ConfigurationProperties(prefix = "jiaming.tenant")
-public class TenantProperties {
-    private List<String> ignoreTables;
+@ConfigurationProperties("jiaming.web")
+public class WebProperties {
 }

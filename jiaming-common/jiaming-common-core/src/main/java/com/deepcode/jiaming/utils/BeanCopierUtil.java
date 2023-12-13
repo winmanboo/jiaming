@@ -1,11 +1,11 @@
 package com.deepcode.jiaming.utils;
 
 import cn.hutool.core.collection.CollUtil;
+import jakarta.annotation.Nonnull;
 import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
 import org.springframework.cglib.beans.BeanCopier;
 
-import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;

@@ -20,14 +20,12 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(value = Exception.class)
     public Result<Void> handleException(Throwable throwable) {
         log.error(ERROR_PATTERN, throwable.getMessage());
-        throwable.printStackTrace();
         return Result.fail();
     }
 
     @ExceptionHandler(value = JiamingException.class)
     public Result<Void> handleServiceException(JiamingException mallException) {
         log.error(ERROR_PATTERN, mallException.getMessage());
-        mallException.printStackTrace();
         return Result.build(mallException.getCode(), mallException.getMessage(), null);
     }
 

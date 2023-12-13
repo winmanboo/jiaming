@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.handler.TenantLineHandler;
 import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.TenantLineInnerInterceptor;
+import com.deepcode.jiaming.properties.MybatisProperties;
 import com.deepcode.jiaming.properties.TenantProperties;
 import lombok.RequiredArgsConstructor;
 import net.sf.jsqlparser.expression.Expression;
@@ -16,8 +17,8 @@ import org.springframework.context.annotation.Bean;
 
 @AutoConfiguration
 @RequiredArgsConstructor
-@MapperScan(basePackages = "com.deepcode.jiaming.**.mapper")
-@EnableConfigurationProperties(value = TenantProperties.class)
+@MapperScan(value = "${jiaming.mybatis.base-package}")
+@EnableConfigurationProperties(value = {TenantProperties.class, MybatisProperties.class})
 public class JiamingMybatisPlusAutoConfiguration {
     private static final TenantLineHandler NONE_TENANT = () -> null;
 

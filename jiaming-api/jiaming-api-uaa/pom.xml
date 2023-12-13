@@ -29,6 +29,12 @@
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-openfeign</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>com.deepcode.jiaming</groupId>
+            <artifactId>jiaming-spring-boot-starter-web</artifactId>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 
 </project>

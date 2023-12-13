@@ -14,14 +14,17 @@ spring:
       port: 6379
       password: wzm123
 
-tenant:
-  ignore-tables:
-    - oauth2_authorization
-    - oauth2_authorization_consent
-    - oauth2_registered_client
-    - sys_menu
-    - sys_tenant
-    - sys_tenant_package
+jiaming:
+  tenant:
+    ignore-tables:
+      - oauth2_authorization
+      - oauth2_authorization_consent
+      - oauth2_registered_client
+      - sys_menu
+      - sys_tenant
+      - sys_tenant_package
+  mybatis:
+    base-package: com.deepcode.jiaming.admin.mapper
 
 mybatis-plus:
   global-config:
