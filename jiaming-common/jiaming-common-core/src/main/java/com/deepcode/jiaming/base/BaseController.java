@@ -15,15 +15,15 @@ public abstract class BaseController {
         return Result.ok(data);
     }
 
-    protected Result<Void> ok() {
+    protected <T> Result<T> ok() {
         return Result.ok();
     }
 
-    protected Result<Void> fail() {
+    protected <T> Result<T> fail() {
         return Result.fail();
     }
 
-    protected Result<Void> fail(String msg) {
+    protected <T> Result<T> fail(String msg) {
         return Result.fail(msg);
     }
 }
